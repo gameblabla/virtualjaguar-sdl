@@ -5,7 +5,7 @@
 //
 
 #include "tom.h"
-#include "sdlemu_opengl.h"
+#include <SDL.h>
 #include "settings.h"
 #include "video.h"
 
@@ -36,7 +36,7 @@ bool InitVideo(void)
 
 	if (!info)
 	{
-		WriteLog("VJ: SDL is unable to get the video info: %s\n", SDL_GetError());
+		//WriteLog("VJ: SDL is unable to get the video info: %s\n", SDL_GetError());
 		return false;
 	}
 	
@@ -56,7 +56,7 @@ bool InitVideo(void)
 
 	if (mainSurface == NULL)
 	{
-		WriteLog("VJ: SDL is unable to set the video mode: %s\n", SDL_GetError());
+		//WriteLog("VJ: SDL is unable to set the video mode: %s\n", SDL_GetError());
 		return false;
 	}
 
@@ -69,7 +69,7 @@ bool InitVideo(void)
 
 	if (surface == NULL)
 	{
-		WriteLog("VJ: Could not create primary SDL surface: %s\n", SDL_GetError());
+		//WriteLog("VJ: Could not create primary SDL surface: %s\n", SDL_GetError());
 		return false;
 	}
 		
@@ -96,11 +96,7 @@ bool InitVideo(void)
 
 	// Set up the backbuffer
 //To be safe, this should be 1280 * 625 * 2...
-#ifdef _TINSPIRE
 	backbuffer = (int16 *)malloc(320 * 240 * sizeof(int16));
-#else
-	backbuffer = (int16 *)malloc(320 * 240 * sizeof(int16));
-#endif
 // backbuffer = (int16 *)malloc(1280 * 625 * sizeof(int16));
 //	memset(backbuffer, 0x44, VIRTUAL_SCREEN_WIDTH * VIRTUAL_SCREEN_HEIGHT_NTSC * sizeof(int16));
 	memset(backbuffer, 0x44, VIRTUAL_SCREEN_WIDTH *
@@ -125,12 +121,12 @@ void VideoDone(void)
 //
 void RenderBackbuffer(void)
 {
-	if (SDL_MUSTLOCK(surface))
+	//if (SDL_MUSTLOCK(surface))
 		SDL_LockSurface(surface);
 
 	memcpy(surface->pixels, backbuffer, tom_getVideoModeWidth() * tom_getVideoModeHeight() * 2);
 
-	if (SDL_MUSTLOCK(surface))
+	//if (SDL_MUSTLOCK(surface))
 		SDL_UnlockSurface(surface);
 
 	SDL_Rect rect = { 0, 0, surface->w, surface->h };
@@ -148,7 +144,7 @@ void ResizeScreen(uint32 width, uint32 height)
 
 	if (surface == NULL)
 	{
-		WriteLog("Video: Could not create primary SDL surface: %s", SDL_GetError());
+		//WriteLog("Video: Could not create primary SDL surface: %s", SDL_GetError());
 //This is just crappy. We shouldn't exit this way--it leaves all kinds of memory leaks
 //as well as screwing up SDL... !!! FIX !!!
 		exit(1);
@@ -157,7 +153,7 @@ void ResizeScreen(uint32 width, uint32 height)
 	mainSurface = SDL_SetVideoMode(width, height, 16, mainSurfaceFlags);
 	if (mainSurface == NULL)
 	{
-		WriteLog("Video: SDL is unable to set the video mode: %s\n", SDL_GetError());
+		//WriteLog("Video: SDL is unable to set the video mode: %s\n", SDL_GetError());
 		exit(1);
 	}
 }
@@ -185,7 +181,7 @@ void ToggleFullscreen(void)
 
 	if (mainSurface == NULL)
 	{
-		WriteLog("Video: SDL is unable to set the video mode: %s\n", SDL_GetError());
+		//WriteLog("Video: SDL is unable to set the video mode: %s\n", SDL_GetError());
 		exit(1);
 	}
 

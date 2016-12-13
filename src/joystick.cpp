@@ -39,16 +39,9 @@
 
 static uint8 joystick_ram[4];
 static uint8 joypad_0_buttons[21];
-static uint8 joypad_1_buttons[21];
 extern bool finished;
 extern bool showGUI;
 bool GUIKeyHeld = false;
-extern int start_logging;
-int gpu_start_log = 0;
-int op_start_log = 0;
-int blit_start_log = 0;
-int effect_start = 0;
-int effect_start2 = 0, effect_start3 = 0, effect_start4 = 0, effect_start5 = 0, effect_start6 = 0;
 bool interactiveMode = false;
 bool iLeft, iRight, iToggle = false;
 bool keyHeld1 = false, keyHeld2 = false, keyHeld3 = false;
@@ -68,15 +61,7 @@ void joystick_exec(void)
 	uint8 * keystate = SDL_GetKeyState(NULL);
   	
 	memset(joypad_0_buttons, 0, 21);
-	memset(joypad_1_buttons, 0, 21);
-	gpu_start_log = 0;							// Only log while key down!
-	effect_start = 0;
-	effect_start2 = effect_start3 = effect_start4 = effect_start5 = effect_start6 = 0;
-	blit_start_log = 0;
 	iLeft = iRight = false;
-
-	if ((keystate[SDLK_LALT] || keystate[SDLK_RALT]) & keystate[SDLK_RETURN])
-		ToggleFullscreen();
 
 	// Keybindings in order of U, D, L, R, C, B, A, Op, Pa, 0-9, #, *
 //	vjs.p1KeyBindings[0] = sdlemu_getval_int("p1k_up", SDLK_UP);
@@ -136,70 +121,9 @@ void joystick_exec(void)
 		exit(0);
     }
 
-	if (keystate[SDLK_q])
-		start_logging = 1;
-	if (keystate[SDLK_w])
-		GPUResetStats();
-//	if (keystate[SDLK_u])		jaguar_long_write(0xf1c384,jaguar_long_read(0xf1c384)+1);
-	if (keystate[SDLK_d])
-		DumpMainMemory();
-	if (keystate[SDLK_l])
-		gpu_start_log = 1;
-	if (keystate[SDLK_o])
-		op_start_log = 1;
-	if (keystate[SDLK_b])
-		blit_start_log = 1;
-
-	if (keystate[SDLK_1])
-		effect_start = 1;
-	if (keystate[SDLK_2])
-		effect_start2 = 1;
-	if (keystate[SDLK_3])
-		effect_start3 = 1;
-	if (keystate[SDLK_4])
-		effect_start4 = 1;
-	if (keystate[SDLK_5])
-		effect_start5 = 1;
-	if (keystate[SDLK_6])
-		effect_start6 = 1;
-
-	if (keystate[SDLK_i])
-		interactiveMode = true;
-
-	if (keystate[SDLK_8] && interactiveMode)
-	{
-		if (!keyHeld1)
-			objectPtr--, keyHeld1 = true;
-	}
-	else
-		keyHeld1 = false;
-
-	if (keystate[SDLK_0] && interactiveMode)
-	{
-		if (!keyHeld2)
-			objectPtr++, keyHeld2 = true;
-	}
-	else
-		keyHeld2 = false;
-
-	if (keystate[SDLK_9] && interactiveMode)
-	{
-		if (!keyHeld3)
-			iToggle = !iToggle, keyHeld3 = true;
-	}
-	else
-		keyHeld3 = false;
-
-	if (keystate[SDLK_e])
-		startMemLog = true;
-	if (keystate[SDLK_r])
-		WriteLog("\n--------> MARK!\n\n");
-	if (keystate[SDLK_t])
-		doDSPDis = true;
-
-
 	// Joystick support [nwagenaar]
 
+/*
     if (vjs.useJoystick)
     {
 		extern SDL_Joystick * joystick;
@@ -222,7 +146,7 @@ void joystick_exec(void)
 		if (SDL_JoystickGetButton(joystick, 2) == SDL_PRESSED)
 			joypad_0_buttons[BUTTON_C] = 0x01;
 	}
-	
+*/
 	// Needed to ensure that the events queue is empty [nwagenaar]
     SDL_PumpEvents();
 }
@@ -231,7 +155,6 @@ void joystick_reset(void)
 {
 	memset(joystick_ram, 0x00, 4);
 	memset(joypad_0_buttons, 0, 21);
-	memset(joypad_1_buttons, 0, 21);
 }
 
 void joystick_done(void)
@@ -272,10 +195,6 @@ uint8 joystick_byte_read(uint32 offset)
 		if (joypad_0_buttons[(pad0Index << 2) + 1]) data |= 0x02;
 		if (joypad_0_buttons[(pad0Index << 2) + 2]) data |= 0x04;
 		if (joypad_0_buttons[(pad0Index << 2) + 3]) data |= 0x08;
-		if (joypad_1_buttons[(pad1Index << 2) + 0]) data |= 0x10;
-		if (joypad_1_buttons[(pad1Index << 2) + 1]) data |= 0x20;
-		if (joypad_1_buttons[(pad1Index << 2) + 2]) data |= 0x40;
-		if (joypad_1_buttons[(pad1Index << 2) + 3]) data |= 0x80;
 
 		return ~data;
 	}

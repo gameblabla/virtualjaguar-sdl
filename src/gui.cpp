@@ -116,16 +116,16 @@ uint32 JaguarLoadROM(uint8 * rom, char * path)
 	char * ext = strrchr(path, '.');
 	if (ext != NULL)
 	{
-		WriteLog("VJ: Loading \"%s\"...", path);
+		//WriteLog("VJ: Loading \"%s\"...", path);
 
 		if (strcasecmp(ext, ".zip") == 0)
 		{
 			// Handle ZIP file loading here...
-			WriteLog("(ZIPped)...");
+			//WriteLog("(ZIPped)...");
 
 			if (load_zipped_file(0, 0, path, NULL, &rom, &romSize) == -1)
 			{
-				WriteLog("Failed!\n");
+				//WriteLog("Failed!\n");
 				return 0;
 			}
 		}
@@ -136,7 +136,7 @@ uint32 JaguarLoadROM(uint8 * rom, char * path)
 
 			if (fp == NULL)
 			{
-				WriteLog("Failed!\n");
+				//WriteLog("Failed!\n");
 				return 0;
 			}
 
@@ -153,7 +153,7 @@ uint32 JaguarLoadROM(uint8 * rom, char * path)
 
 			if (fp == NULL)
 			{
-				WriteLog("Failed!\n");
+				//WriteLog("Failed!\n");
 				return 0;
 			}
 
@@ -163,7 +163,7 @@ uint32 JaguarLoadROM(uint8 * rom, char * path)
 			gzclose(fp);
 		}
 
-		WriteLog("OK (%i bytes)\n", romSize);
+		//WriteLog("OK (%i bytes)\n", romSize);
 	}
 
 	return romSize;
@@ -179,19 +179,19 @@ bool JaguarLoadFile(char * path)
 
 	if (jaguarRomSize == 0)
 	{
-		WriteLog("GUI: Could not load ROM from file \"%s\"...\nAborting load!\n", path);
+		//WriteLog("GUI: Could not load ROM from file \"%s\"...\nAborting load!\n", path);
 		return false;
 	}
 
 	jaguar_mainRom_crc32 = crc32_calcCheckSum(jaguar_mainRom, jaguarRomSize);
 	eeprom_init();
-	WriteLog("CRC: %08X\n", (unsigned int)jaguar_mainRom_crc32);
+	//WriteLog("CRC: %08X\n", (unsigned int)jaguar_mainRom_crc32);
 
 	jaguarRunAddress = 0x802000;
 
 	if (strcasecmp(ext, ".rom") == 0)
 	{
-		WriteLog("GUI: Setting up homebrew (ROM)... Run address: 00802000, length: %08X\n", jaguarRomSize);
+		//WriteLog("GUI: Setting up homebrew (ROM)... Run address: 00802000, length: %08X\n", jaguarRomSize);
 
 		for(int i=jaguarRomSize-1; i>=0; i--)
 			jaguar_mainRom[0x2000 + i] = jaguar_mainRom[i];
@@ -221,7 +221,7 @@ bool JaguarLoadFile(char * path)
 		{
 			uint32 loadAddress = GET32(jaguar_mainRom, 0x28), runAddress = GET32(jaguar_mainRom, 0x24),
 				codeSize = GET32(jaguar_mainRom, 0x18) + GET32(jaguar_mainRom, 0x1C);
-			WriteLog("GUI: Setting up homebrew (ABS-2)... Run address: %08X, length: %08X\n", runAddress, codeSize);
+			//WriteLog("GUI: Setting up homebrew (ABS-2)... Run address: %08X, length: %08X\n", runAddress, codeSize);
 
 			if (loadAddress < 0x800000)
 				memcpy(jaguar_mainRam + loadAddress, jaguar_mainRom + 0xA8, codeSize);
@@ -235,7 +235,7 @@ bool JaguarLoadFile(char * path)
 		}
 		else
 		{
-			WriteLog("GUI: Couldn't find correct ABS format: %02X %02X\n", jaguar_mainRom[0], jaguar_mainRom[1]);
+			//WriteLog("GUI: Couldn't find correct ABS format: %02X %02X\n", jaguar_mainRom[0], jaguar_mainRom[1]);
 			return false;
 		}
 	}
@@ -244,7 +244,7 @@ bool JaguarLoadFile(char * path)
 		if (jaguar_mainRom[0] == 0x60 && jaguar_mainRom[1] == 0x1A)
 		{
 			uint32 loadAddress = GET32(jaguar_mainRom, 0x22), runAddress = GET32(jaguar_mainRom, 0x2A);
-			WriteLog("GUI: Setting up homebrew (JAG)... Run address: %08X, length: %08X\n", runAddress, jaguarRomSize - 0x2E);
+			//WriteLog("GUI: Setting up homebrew (JAG)... Run address: %08X, length: %08X\n", runAddress, jaguarRomSize - 0x2E);
 			memcpy(jaguar_mainRam + loadAddress, jaguar_mainRom + 0x2E, jaguarRomSize - 0x2E);
 			jaguarRunAddress = runAddress;
 		}

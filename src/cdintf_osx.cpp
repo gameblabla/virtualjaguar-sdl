@@ -4,8 +4,6 @@
 // by James L. Hammons & ?
 //
 
-#include "log.h"
-
 //
 // OS X support functions
 // OS specific implementation of OS agnostic functions

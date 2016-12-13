@@ -11,10 +11,10 @@ LD         = gcc
 TARGET     = vj$(EXESUFFIX)
 
 # Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
-CFLAGS = -Ofast -march=native `sdl-config --cflags` -D__GCCUNIX__ 
+CFLAGS = -Wall -Ofast -march=native -fno-exceptions -fno-rtti -fno-PIE `sdl-config --cflags` -D__GCCUNIX__ 
 LDFLAGS = -Wl,--as-needed -flto -s
 
-LIBS = `sdl-config --libs` -lstdc++ -lz $(GLLIB)
+LIBS = `sdl-config --libs` -lz $(GLLIB)
 
 INCS = -I. -Isrc -Isrc/include
 
@@ -23,8 +23,6 @@ THECC = $(CC) $(CFLAGS) $(INCS)
 OBJS = \
 	obj/anajoy.o \
 	obj/blitter.o \
-	obj/cdrom.o \
-	obj/cdintf.o \
 	obj/clock.o \
 	obj/crc32.o \
 	obj/dac.o \
@@ -32,25 +30,18 @@ OBJS = \
 	obj/eeprom.o \
 	obj/gpu.o \
 	obj/gui.o \
-	obj/jagdasm.o \
 	obj/jaguar.o \
 	obj/jerry.o \
 	obj/joystick.o \
-	obj/log.o \
 	obj/m68kcpu.o obj/m68kops.o obj/m68kopac.o obj/m68kopdm.o obj/m68kopnz.o \
-	obj/m68kdasm.o \
 	obj/memory.o \
 	obj/objectp.o \
-	obj/sdlemu_config.o \
 	obj/settings.o \
 	obj/tom.o \
 	obj/unzip.o \
 	obj/version.o \
 	obj/video.o \
-	obj/vj.o \
-	$(ICON)
-#	obj/cdbios.o 
-#	obj/cdi.o 
+	obj/vj.o
 
 all: obj $(TARGET)
 

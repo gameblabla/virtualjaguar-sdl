@@ -24,7 +24,6 @@
 #include <sys/types.h>
 
 // *** End OS dependent ***
-#include "log.h"
 #include "string.h"
 
 // *** Virtual Jaguar dependent ***
@@ -60,14 +59,14 @@ bool CDIntfInit(void)
     {
         // CD-ROM isn't accessable.
         // Write the error in the log file and return false.
-        WriteLog("CDINTF: CDIntfInit - Unable to open CDROM!\n");
+        //WriteLog("CDINTF: CDIntfInit - Unable to open CDROM!\n");
         return false;
     }    
     else
     {
         // CD-ROM is accessable.
         // Write the success in the log file and return true.
-        WriteLog("CDINTF: CDIntfInit - Succesfully opened CDROM!\n"); 
+        //WriteLog("CDINTF: CDIntfInit - Succesfully opened CDROM!\n"); 
         close(device_name);
         return true;
     }
@@ -77,7 +76,7 @@ bool CDIntfInit(void)
 void CDIntfDone(void)
 {
     // Just in case : closing device_name.
-    WriteLog("CDINTF: CDIntfDone - Closing CDROM!\n");
+    //WriteLog("CDINTF: CDIntfDone - Closing CDROM!\n");
     close(device_name);
 }
 
@@ -94,7 +93,7 @@ bool CDIntfReadBlock(uint32 sector, uint8 * buffer)
     {
         // CD-ROM isn't accessable.
         // Write the error in the log file and return false.
-        WriteLog("CDINTF: CDIntfReadBlock - Unable to open CDROM!\n");
+        //WriteLog("CDINTF: CDIntfReadBlock - Unable to open CDROM!\n");
         return false;
     }    
 	
@@ -118,7 +117,7 @@ bool CDIntfReadBlock(uint32 sector, uint8 * buffer)
 	
 	// Uncomment the following for debug reasons.
 	//
-    // WriteLog("CDINTF: CDIntfReadBlock - Reading sector %d!\n", sector);
+    // //WriteLog("CDINTF: CDIntfReadBlock - Reading sector %d!\n", sector);
     
 	return (ret > 0);
 
@@ -132,36 +131,37 @@ uint32 CDIntfGetNumSessions(void)
 
 void CDIntfSelectDrive(uint32 driveNum)
 {
-	WriteLog("CDINTF: SelectDrive unimplemented!\n");
+	//WriteLog("CDINTF: SelectDrive unimplemented!\n");
 }
 
 uint32 CDIntfGetCurrentDrive(void)
 {
-	WriteLog("CDINTF: GetCurrentDrive unimplemented!\n");
+	//WriteLog("CDINTF: GetCurrentDrive unimplemented!\n");
 	return 0;
 }
 
 const uint8 * CDIntfGetDriveName(uint32)
 {
-	WriteLog("CDINTF: GetDriveName unimplemented!\n");
+	//WriteLog("CDINTF: GetDriveName unimplemented!\n");
 	return NULL;
 }
 
 uint8 CDIntfGetSessionInfo(uint32 session, uint32 offset)
 {
-	WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
+	//WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
 	return 0xFF;
 }
 
 uint8 CDIntfGetTrackInfo(uint32 track, uint32 offset)
 {
-	WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
+	//WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
 	return 0xFF;
 }
 
 #else
 
-#include "log.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 //
 // Linux support functions
@@ -170,7 +170,7 @@ uint8 CDIntfGetTrackInfo(uint32 track, uint32 offset)
 
 bool CDIntfInit(void)
 {
-	WriteLog("CDINTF: Init unimplemented!\n");
+	//WriteLog("CDINTF: Init unimplemented!\n");
 	return false;
 }
 
@@ -180,7 +180,7 @@ void CDIntfDone(void)
 
 bool CDIntfReadBlock(uint32 sector, uint8 * buffer)
 {
-	WriteLog("CDINTF: ReadBlock unimplemented!\n");
+	//WriteLog("CDINTF: ReadBlock unimplemented!\n");
 	return false;
 }
 
@@ -192,30 +192,30 @@ uint32 CDIntfGetNumSessions(void)
 
 void CDIntfSelectDrive(uint32 driveNum)
 {
-	WriteLog("CDINTF: SelectDrive unimplemented!\n");
+	//WriteLog("CDINTF: SelectDrive unimplemented!\n");
 }
 
 uint32 CDIntfGetCurrentDrive(void)
 {
-	WriteLog("CDINTF: GetCurrentDrive unimplemented!\n");
+	//WriteLog("CDINTF: GetCurrentDrive unimplemented!\n");
 	return 0;
 }
 
 const uint8 * CDIntfGetDriveName(uint32)
 {
-	WriteLog("CDINTF: GetDriveName unimplemented!\n");
+	//WriteLog("CDINTF: GetDriveName unimplemented!\n");
 	return NULL;
 }
 
 uint8 CDIntfGetSessionInfo(uint32 session, uint32 offset)
 {
-	WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
+	//WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
 	return 0xFF;
 }
 
 uint8 CDIntfGetTrackInfo(uint32 track, uint32 offset)
 {
-	WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
+	//WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
 	return 0xFF;
 }
 #endif

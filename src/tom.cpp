@@ -957,8 +957,8 @@ void tom_done(void)
 	op_done();
 //This should be done by JERRY!	pcm_done();
 	blitter_done();
-	WriteLog("TOM: Resolution %i x %i %s\n", tom_getVideoModeWidth(), tom_getVideoModeHeight(),
-		videoMode_to_str[tom_getVideoMode()]);
+	/*WriteLog("TOM: Resolution %i x %i %s\n", tom_getVideoModeWidth(), tom_getVideoModeHeight(),
+		videoMode_to_str[tom_getVideoMode()]);*/
 //	WriteLog("\ntom: object processor:\n");
 //	WriteLog("tom: pointer to object list: 0x%.8x\n",op_get_list_pointer());
 //	WriteLog("tom: INT1=0x%.2x%.2x\n",TOMReadByte(0xf000e0),TOMReadByte(0xf000e1));
@@ -1173,8 +1173,6 @@ uint16 TOMReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 #ifdef TOM_DEBUG
 	WriteLog("TOM: Reading word at %06X\n", offset);
 #endif
-if (offset >= 0xF02000 && offset <= 0xF020FF)
-	WriteLog("TOM: Read attempted from GPU register file by %s (unimplemented)!\n", whoName[who]);
 
 	if (offset == 0xF000E0)
 	{
@@ -1217,10 +1215,6 @@ void TOMWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 //???Is this needed???
 // Perhaps on the writes--32-bit writes that is! And masked with FF7FFF...
 	offset &= 0xFF3FFF;
-
-#ifdef TOM_DEBUG
-	WriteLog("TOM: Writing byte %02X at %06X\n", data, offset);
-#endif
 
 	if ((offset >= GPU_CONTROL_RAM_BASE) && (offset < GPU_CONTROL_RAM_BASE+0x20))
 	{
@@ -1283,16 +1277,6 @@ void TOMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 {
 //???Is this needed???
 	offset &= 0xFF3FFF;
-
-#ifdef TOM_DEBUG
-	WriteLog("TOM: Writing word %04X at %06X\n", data, offset);
-#endif
-if (offset == 0xF00000 + MEMCON1)
-	WriteLog("TOM: Memory Configuration 1 written by %s: %04X\n", whoName[who], data);
-if (offset == 0xF00000 + MEMCON2)
-	WriteLog("TOM: Memory Configuration 2 written by %s: %04X\n", whoName[who], data);
-if (offset >= 0xF02000 && offset <= 0xF020FF)
-	WriteLog("TOM: Write attempted to GPU register file by %s (unimplemented)!\n", whoName[who]);
 
 	if ((offset >= GPU_CONTROL_RAM_BASE) && (offset < GPU_CONTROL_RAM_BASE+0x20))
 	{
@@ -1365,33 +1349,6 @@ if (offset >= 0xF02000 && offset <= 0xF020FF)
 
 	TOMWriteByte(offset, data >> 8, who);
 	TOMWriteByte(offset+1, data & 0xFF, who);
-
-if (offset == VDB)
-	WriteLog("TOM: Vertical Display Begin written by %s: %u\n", whoName[who], data);
-if (offset == VDE)
-	WriteLog("TOM: Vertical Display End written by %s: %u\n", whoName[who], data);
-if (offset == VP)
-	WriteLog("TOM: Vertical Period written by %s: %u (%sinterlaced)\n", whoName[who], data, (data & 0x01 ? "non-" : ""));
-if (offset == HDB1)
-	WriteLog("TOM: Horizontal Display Begin 1 written by %s: %u\n", whoName[who], data);
-if (offset == HDE)
-	WriteLog("TOM: Horizontal Display End written by %s: %u\n", whoName[who], data);
-if (offset == HP)
-	WriteLog("TOM: Horizontal Period written by %s: %u (+1*2 = %u)\n", whoName[who], data, (data + 1) * 2);
-if (offset == VBB)
-	WriteLog("TOM: Vertical Blank Begin written by %s: %u\n", whoName[who], data);
-if (offset == VBE)
-	WriteLog("TOM: Vertical Blank End written by %s: %u\n", whoName[who], data);
-if (offset == VS)
-	WriteLog("TOM: Vertical Sync written by %s: %u\n", whoName[who], data);
-if (offset == VI)
-	WriteLog("TOM: Vertical Interrupt written by %s: %u\n", whoName[who], data);
-if (offset == HBB)
-	WriteLog("TOM: Horizontal Blank Begin written by %s: %u\n", whoName[who], data);
-if (offset == HBE)
-	WriteLog("TOM: Horizontal Blank End written by %s: %u\n", whoName[who], data);
-if (offset == VMODE)
-	WriteLog("TOM: Video Mode written by %s: %04X. PWIDTH = %u, MODE = %s, flags:%s%s (VC = %u)\n", whoName[who], data, ((data >> 9) & 0x07) + 1, videoMode_to_str[(data & MODE) >> 1], (data & BGEN ? " BGEN" : ""), (data & VARMOD ? " VARMOD" : ""), GET16(tom_ram_8, VC));
 
 	// detect screen resolution changes
 //This may go away in the future, if we do the virtualized screen thing...

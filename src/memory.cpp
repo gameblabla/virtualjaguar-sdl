@@ -8,7 +8,6 @@
 
 #include <malloc.h>
 #include <stdlib.h>
-#include "log.h"
 #include "memory.h"
 
 // Useful structs (for doubly linked list in this case)
@@ -81,16 +80,14 @@ void * memory_malloc(UINT32 size, char * info)
 
 void memory_malloc_secure(void ** new_ptr, UINT32 size, char * info)
 {
-	WriteLog("Memory: Allocating %i bytes of memory for <%s>...", size, (info == NULL ? "unknown" : info));
+	//WriteLog("Memory: Allocating %i bytes of memory for <%s>...", size, (info == NULL ? "unknown" : info));
 
 	void * ptr = malloc(size);
 
-	if (ptr == NULL)
+	/*if (ptr == NULL)
 	{
-		WriteLog("Failed!\n");
-		log_done();
 		exit(0);
-	}
+	}*/
 
 	memory_addMemInfo(ptr, size, info);
 	currentAllocatedMemory += size;
@@ -99,7 +96,7 @@ void memory_malloc_secure(void ** new_ptr, UINT32 size, char * info)
 		maximumAllocatedMemory = currentAllocatedMemory;
 
 	*new_ptr = ptr;
-	WriteLog("OK\n");
+	//WriteLog("OK\n");
 }
 
 void memory_free(void * ptr)
@@ -111,7 +108,7 @@ void memory_free(void * ptr)
 	while (alias->ptr != ptr)
 		alias = alias->next;
 
-	WriteLog("Memory: Freeing %i bytes from <%s>...\n", (int)alias->size, alias->info);
+	//WriteLog("Memory: Freeing %i bytes from <%s>...\n", (int)alias->size, alias->info);
 
 	free(ptr);
 	currentAllocatedMemory -= alias->size;

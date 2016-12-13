@@ -123,26 +123,26 @@ void op_done(void)
 		{ "\"==\"", "\"<\"", "\">\"", "(opflag set)", "(second half line)", "?", "?", "?" };
 
 	uint32 olp = op_get_list_pointer();
-	WriteLog("OP: OLP = %08X\n", olp);
-	WriteLog("OP: Phrase dump\n    ----------\n");
+	//WriteLog("OP: OLP = %08X\n", olp);
+	//WriteLog("OP: Phrase dump\n    ----------\n");
 	for(uint32 i=0; i<0x100; i+=8)
 	{
 		uint32 hi = JaguarReadLong(olp + i, OP), lo = JaguarReadLong(olp + i + 4, OP);
-		WriteLog("\t%08X: %08X %08X %s", olp + i, hi, lo, opType[lo & 0x07]);
+		//WriteLog("\t%08X: %08X %08X %s", olp + i, hi, lo, opType[lo & 0x07]);
 		if ((lo & 0x07) == 3)
 		{
 			uint16 ypos = (lo >> 3) & 0x7FF;
 			uint8  cc   = (lo >> 14) & 0x03;
 			uint32 link = ((hi << 11) | (lo >> 21)) & 0x3FFFF8;
-			WriteLog(" YPOS=%u, CC=%s, link=%08X", ypos, ccType[cc], link);
+			//WriteLog(" YPOS=%u, CC=%s, link=%08X", ypos, ccType[cc], link);
 		}
-		WriteLog("\n");
+		//WriteLog("\n");
 		if ((lo & 0x07) == 0)
 			DumpFixedObject(op_load_phrase(olp+i), op_load_phrase(olp+i+8));
 		if ((lo & 0x07) == 1)
 			DumpScaledObject(op_load_phrase(olp+i), op_load_phrase(olp+i+8), op_load_phrase(olp+i+16));
 	}
-	WriteLog("\n");
+	//WriteLog("\n");
 
 	memory_free(op_blend_y);
 	memory_free(op_blend_cr);
@@ -181,9 +181,9 @@ void OPWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 	SET16(objectp_ram, offset, data);
 
 /*if (offset == 0x20)
-WriteLog("OP: Setting lo list pointer: %04X\n", data);
+//WriteLog("OP: Setting lo list pointer: %04X\n", data);
 if (offset == 0x22)
-WriteLog("OP: Setting hi list pointer: %04X\n", data);//*/
+//WriteLog("OP: Setting hi list pointer: %04X\n", data);//*/
 }
 
 uint32 op_get_list_pointer(void)
@@ -257,51 +257,10 @@ void OPStorePhrase(uint32 offset, uint64 p)
 //
 void DumpScaledObject(uint64 p0, uint64 p1, uint64 p2)
 {
-	WriteLog(" (SCALED BITMAP)");
-	WriteLog(" %08X --> phrase %08X %08X\n", op_pointer, (uint32)(p1>>32), (uint32)(p1&0xFFFFFFFF));
-	WriteLog("                 %08X --> phrase %08X %08X ", op_pointer+8, (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
-	uint8 bitdepth = (p1 >> 12) & 0x07;
-//WAS:	int16 ypos = ((p0 >> 3) & 0x3FF);			// ??? What if not interlaced (/2)?
-	int16 ypos = ((p0 >> 3) & 0x7FF);			// ??? What if not interlaced (/2)?
-	int32 xpos = p1 & 0xFFF;
-	xpos = (xpos & 0x800 ? xpos | 0xFFFFF000 : xpos);
-	uint32 iwidth = ((p1 >> 28) & 0x3FF);
-	uint32 dwidth = ((p1 >> 18) & 0x3FF);		// Unsigned!
-	uint16 height = ((p0 >> 14) & 0x3FF);
-	uint32 link = ((p0 >> 24) & 0x7FFFF) << 3;
-	uint32 ptr = ((p0 >> 43) & 0x1FFFFF) << 3;
-	uint32 firstPix = (p1 >> 49) & 0x3F;
-	uint8 flags = (p1 >> 45) & 0x0F;
-	uint8 idx = (p1 >> 38) & 0x7F;
-	uint32 pitch = (p1 >> 15) & 0x07;
-	WriteLog("\n    [%u (%u) x %u @ (%i, %u) (%u bpp), l: %08X, p: %08X fp: %02X, fl:%s%s%s%s, idx:%02X, pt:%02X]\n",
-		iwidth, dwidth, height, xpos, ypos, op_bitmap_bit_depth[bitdepth], link, ptr, firstPix, (flags&OPFLAG_REFLECT ? "REFLECT " : ""), (flags&OPFLAG_RMW ? "RMW " : ""), (flags&OPFLAG_TRANS ? "TRANS " : ""), (flags&OPFLAG_RELEASE ? "RELEASE" : ""), idx, pitch);
-	uint32 hscale = p2 & 0xFF;
-	uint32 vscale = (p2 >> 8) & 0xFF;
-	uint32 remainder = (p2 >> 16) & 0xFF;
-	WriteLog("    [hsc: %02X, vsc: %02X, rem: %02X]\n", hscale, vscale, remainder);
 }
 
 void DumpFixedObject(uint64 p0, uint64 p1)
 {
-	WriteLog(" (BITMAP)");
-	WriteLog(" %08X --> phrase %08X %08X\n", op_pointer, (uint32)(p1>>32), (uint32)(p1&0xFFFFFFFF));
-	uint8 bitdepth = (p1 >> 12) & 0x07;
-//WAS:	int16 ypos = ((p0 >> 3) & 0x3FF);			// ??? What if not interlaced (/2)?
-	int16 ypos = ((p0 >> 3) & 0x7FF);			// ??? What if not interlaced (/2)?
-	int32 xpos = p1 & 0xFFF;
-	xpos = (xpos & 0x800 ? xpos | 0xFFFFF000 : xpos);
-	uint32 iwidth = ((p1 >> 28) & 0x3FF);
-	uint32 dwidth = ((p1 >> 18) & 0x3FF);		// Unsigned!
-	uint16 height = ((p0 >> 14) & 0x3FF);
-	uint32 link = ((p0 >> 24) & 0x7FFFF) << 3;
-	uint32 ptr = ((p0 >> 43) & 0x1FFFFF) << 3;
-	uint32 firstPix = (p1 >> 49) & 0x3F;
-	uint8 flags = (p1 >> 45) & 0x0F;
-	uint8 idx = (p1 >> 38) & 0x7F;
-	uint32 pitch = (p1 >> 15) & 0x07;
-	WriteLog("    [%u (%u) x %u @ (%i, %u) (%u bpp), l: %08X, p: %08X fp: %02X, fl:%s%s%s%s, idx:%02X, pt:%02X]\n",
-		iwidth, dwidth, height, xpos, ypos, op_bitmap_bit_depth[bitdepth], link, ptr, firstPix, (flags&OPFLAG_REFLECT ? "REFLECT " : ""), (flags&OPFLAG_RMW ? "RMW " : ""), (flags&OPFLAG_TRANS ? "TRANS " : ""), (flags&OPFLAG_RELEASE ? "RELEASE" : ""), idx, pitch);
 }
 
 //
@@ -311,7 +270,6 @@ void DumpFixedObject(uint64 p0, uint64 p1)
 //where we left off. !!! FIX !!!
 void OPProcessList(int scanline, bool render)
 {
-extern int op_start_log;
 //	char * condition_to_str[8] =
 //		{ "==", "<", ">", "(opflag set)", "(second half line)", "?", "?", "?" };
 
@@ -319,7 +277,7 @@ extern int op_start_log;
 
 //	objectp_stop_reading_list = false;
 
-//WriteLog("OP: Processing line #%u (OLP=%08X)...\n", scanline, op_pointer);
+////WriteLog("OP: Processing line #%u (OLP=%08X)...\n", scanline, op_pointer);
 //op_done();
 
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
@@ -332,7 +290,7 @@ int bitmapCounter = 0;
 
 	uint32 opCyclesToRun = 10000;					// This is a pulled-out-of-the-air value (will need to be fixed, obviously!)
 
-//	if (op_pointer) WriteLog(" new op list at 0x%.8x scanline %i\n",op_pointer,scanline);
+//	if (op_pointer) //WriteLog(" new op list at 0x%.8x scanline %i\n",op_pointer,scanline);
 	while (op_pointer)
 	{
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
@@ -345,77 +303,9 @@ else
 //			return;
 			
 		uint64 p0 = op_load_phrase(op_pointer);
-//WriteLog("\t%08X type %i\n", op_pointer, (uint8)p0 & 0x07);
+////WriteLog("\t%08X type %i\n", op_pointer, (uint8)p0 & 0x07);
 		op_pointer += 8;
-if (scanline == tom_get_vdb() && op_start_log)
-//if (scanline == 215 && op_start_log)
-//if (scanline == 28 && op_start_log)
-{
-WriteLog("%08X --> phrase %08X %08X", op_pointer - 8, (int)(p0>>32), (int)(p0&0xFFFFFFFF));
-if ((p0 & 0x07) == OBJECT_TYPE_BITMAP)
-{
-WriteLog(" (BITMAP) ");
-uint64 p1 = op_load_phrase(op_pointer);
-WriteLog("\n%08X --> phrase %08X %08X ", op_pointer, (int)(p1>>32), (int)(p1&0xFFFFFFFF));
-	uint8 bitdepth = (p1 >> 12) & 0x07;
-//WAS:	int16 ypos = ((p0 >> 3) & 0x3FF);			// ??? What if not interlaced (/2)?
-	int16 ypos = ((p0 >> 3) & 0x7FF);			// ??? What if not interlaced (/2)?
-int32 xpos = p1 & 0xFFF;
-xpos = (xpos & 0x800 ? xpos | 0xFFFFF000 : xpos);
-	uint32 iwidth = ((p1 >> 28) & 0x3FF);
-	uint32 dwidth = ((p1 >> 18) & 0x3FF);		// Unsigned!
-	uint16 height = ((p0 >> 14) & 0x3FF);
-	uint32 link = ((p0 >> 24) & 0x7FFFF) << 3;
-	uint32 ptr = ((p0 >> 43) & 0x1FFFFF) << 3;
-	uint32 firstPix = (p1 >> 49) & 0x3F;
-	uint8 flags = (p1 >> 45) & 0x0F;
-	uint8 idx = (p1 >> 38) & 0x7F;
-	uint32 pitch = (p1 >> 15) & 0x07;
-WriteLog("\n    [%u (%u) x %u @ (%i, %u) (%u bpp), l: %08X, p: %08X fp: %02X, fl:%s%s%s%s, idx:%02X, pt:%02X]\n",
-	iwidth, dwidth, height, xpos, ypos, op_bitmap_bit_depth[bitdepth], link, ptr, firstPix, (flags&OPFLAG_REFLECT ? "REFLECT " : ""), (flags&OPFLAG_RMW ? "RMW " : ""), (flags&OPFLAG_TRANS ? "TRANS " : ""), (flags&OPFLAG_RELEASE ? "RELEASE" : ""), idx, pitch);
-}
-if ((p0 & 0x07) == OBJECT_TYPE_SCALE)
-{
-WriteLog(" (SCALED BITMAP)");
-uint64 p1 = op_load_phrase(op_pointer), p2 = op_load_phrase(op_pointer+8);
-WriteLog("\n%08X --> phrase %08X %08X ", op_pointer, (int)(p1>>32), (int)(p1&0xFFFFFFFF));
-WriteLog("\n%08X --> phrase %08X %08X ", op_pointer+8, (int)(p2>>32), (int)(p2&0xFFFFFFFF));
-	uint8 bitdepth = (p1 >> 12) & 0x07;
-//WAS:	int16 ypos = ((p0 >> 3) & 0x3FF);			// ??? What if not interlaced (/2)?
-	int16 ypos = ((p0 >> 3) & 0x7FF);			// ??? What if not interlaced (/2)?
-int32 xpos = p1 & 0xFFF;
-xpos = (xpos & 0x800 ? xpos | 0xFFFFF000 : xpos);
-	uint32 iwidth = ((p1 >> 28) & 0x3FF);
-	uint32 dwidth = ((p1 >> 18) & 0x3FF);		// Unsigned!
-	uint16 height = ((p0 >> 14) & 0x3FF);
-	uint32 link = ((p0 >> 24) & 0x7FFFF) << 3;
-	uint32 ptr = ((p0 >> 43) & 0x1FFFFF) << 3;
-	uint32 firstPix = (p1 >> 49) & 0x3F;
-	uint8 flags = (p1 >> 45) & 0x0F;
-	uint8 idx = (p1 >> 38) & 0x7F;
-	uint32 pitch = (p1 >> 15) & 0x07;
-WriteLog("\n    [%u (%u) x %u @ (%i, %u) (%u bpp), l: %08X, p: %08X fp: %02X, fl:%s%s%s%s, idx:%02X, pt:%02X]\n",
-	iwidth, dwidth, height, xpos, ypos, op_bitmap_bit_depth[bitdepth], link, ptr, firstPix, (flags&OPFLAG_REFLECT ? "REFLECT " : ""), (flags&OPFLAG_RMW ? "RMW " : ""), (flags&OPFLAG_TRANS ? "TRANS " : ""), (flags&OPFLAG_RELEASE ? "RELEASE" : ""), idx, pitch);
-	uint32 hscale = p2 & 0xFF;
-	uint32 vscale = (p2 >> 8) & 0xFF;
-	uint32 remainder = (p2 >> 16) & 0xFF;
-WriteLog("    [hsc: %02X, vsc: %02X, rem: %02X]\n", hscale, vscale, remainder);
-}
-if ((p0 & 0x07) == OBJECT_TYPE_GPU)
-WriteLog(" (GPU)\n");
-if ((p0 & 0x07) == OBJECT_TYPE_BRANCH)
-{
-WriteLog(" (BRANCH)\n");
-uint8 * jaguar_mainRam = GetRamPtr();
-WriteLog("[RAM] --> ");
-for(int k=0; k<8; k++)
-	WriteLog("%02X ", jaguar_mainRam[op_pointer-8 + k]);
-WriteLog("\n");
-}
-if ((p0 & 0x07) == OBJECT_TYPE_STOP)
-WriteLog("    --> List end\n");
-}//*/
-		
+
 		switch ((uint8)p0 & 0x07)
 		{
 		case OBJECT_TYPE_BITMAP:
@@ -436,8 +326,7 @@ WriteLog("    --> List end\n");
 			uint32 height = (p0 & 0xFFC000) >> 14;
 			uint32 oldOPP = op_pointer - 8;
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
-if (inhibit && op_start_log)
-	WriteLog("!!! ^^^ This object is INHIBITED! ^^^ !!!\n");
+
 bitmapCounter++;
 if (!inhibit)	// For OP testing only!
 // *** END OP PROCESSOR TESTING ONLY ***
@@ -445,8 +334,8 @@ if (!inhibit)	// For OP testing only!
 			{
 				uint64 p1 = op_load_phrase(op_pointer);
 				op_pointer += 8;
-//WriteLog("OP: Writing scanline %d with ypos == %d...\n", scanline, ypos);
-//WriteLog("--> Writing %u BPP bitmap...\n", op_bitmap_bit_depth[(p1 >> 12) & 0x07]);
+////WriteLog("OP: Writing scanline %d with ypos == %d...\n", scanline, ypos);
+////WriteLog("--> Writing %u BPP bitmap...\n", op_bitmap_bit_depth[(p1 >> 12) & 0x07]);
 //				OPProcessFixedBitmap(scanline, p0, p1, render);
 				OPProcessFixedBitmap(p0, p1, render);
 
@@ -474,7 +363,7 @@ if (!inhibit)	// For OP testing only!
 				p0 |= data << 40;
 				OPStorePhrase(oldOPP, p0);
 			}
-//WriteLog("\t\tOld OP: %08X -> ", op_pointer);
+////WriteLog("\t\tOld OP: %08X -> ", op_pointer);
 //Temp, for testing...
 //No doubt, this type of check will break all kinds of stuff... !!! FIX !!!
 //And it does! !!! FIX !!!
@@ -483,7 +372,7 @@ if (!inhibit)	// For OP testing only!
 		return;*/
 
 			op_pointer = (p0 & 0x000007FFFF000000LL) >> 21;
-//WriteLog("New OP: %08X\n", op_pointer);
+////WriteLog("New OP: %08X\n", op_pointer);
 			break;
 		}
 		case OBJECT_TYPE_SCALE:
@@ -493,11 +382,7 @@ if (!inhibit)	// For OP testing only!
 			uint32 height = (p0 & 0xFFC000) >> 14;
 			uint32 oldOPP = op_pointer - 8;
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
-if (inhibit && op_start_log)
-{
-	WriteLog("!!! ^^^ This object is INHIBITED! ^^^ !!! (scanline=%u, ypos=%u, height=%u)\n", scanline, ypos, height);
-	DumpScaledObject(p0, op_load_phrase(op_pointer), op_load_phrase(op_pointer+8));
-}
+
 bitmapCounter++;
 if (!inhibit)	// For OP testing only!
 // *** END OP PROCESSOR TESTING ONLY ***
@@ -507,7 +392,7 @@ if (!inhibit)	// For OP testing only!
 				op_pointer += 8;
 				uint64 p2 = op_load_phrase(op_pointer);
 				op_pointer += 8;
-//WriteLog("OP: %08X (%d) %08X%08X %08X%08X %08X%08X\n", oldOPP, scanline, (uint32)(p0>>32), (uint32)(p0&0xFFFFFFFF), (uint32)(p1>>32), (uint32)(p1&0xFFFFFFFF), (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
+////WriteLog("OP: %08X (%d) %08X%08X %08X%08X %08X%08X\n", oldOPP, scanline, (uint32)(p0>>32), (uint32)(p0&0xFFFFFFFF), (uint32)(p1>>32), (uint32)(p1&0xFFFFFFFF), (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
 				OPProcessScaledBitmap(p0, p1, p2, render);
 
 				// OP write-backs
@@ -526,7 +411,7 @@ if (!inhibit)	// For OP testing only!
 
 //extern int start_logging;
 //if (start_logging)
-//	WriteLog("--> Returned from scaled bitmap processing (rem=%02X, vscale=%02X)...\n", remainder, vscale);//*/
+//	//WriteLog("--> Returned from scaled bitmap processing (rem=%02X, vscale=%02X)...\n", remainder, vscale);//*/
 //Locks up here:
 //--> Returned from scaled bitmap processing (rem=20, vscale=80)...
 //There are other problems here, it looks like...
@@ -597,22 +482,22 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 				remainder -= 0x20;					// 1.0f in [3.5] fixed point format
 
 //if (start_logging)
-//	WriteLog("--> Finished writebacks...\n");//*/
+//	//WriteLog("--> Finished writebacks...\n");//*/
 
-//WriteLog(" [%08X%08X -> ", (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
+////WriteLog(" [%08X%08X -> ", (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
 				p2 &= ~0x0000000000FF0000LL;
 				p2 |= (uint64)remainder << 16;
-//WriteLog("%08X%08X]\n", (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
+////WriteLog("%08X%08X]\n", (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
 				OPStorePhrase(oldOPP+16, p2);
 //remainder = (uint8)(p2 >> 16), vscale = (uint8)(p2 >> 8);
-//WriteLog(" [after]: rem=%02X, vscale=%02X\n", remainder, vscale);
+////WriteLog(" [after]: rem=%02X, vscale=%02X\n", remainder, vscale);
 			}
 			op_pointer = (p0 & 0x000007FFFF000000LL) >> 21;
 			break;
 		}
 		case OBJECT_TYPE_GPU:
 		{
-//WriteLog("OP: Asserting GPU IRQ #3...\n");
+////WriteLog("OP: Asserting GPU IRQ #3...\n");
 			op_set_current_object(p0);
 			GPUSetIRQLine(3, ASSERT_LINE);
 //Also, OP processing is suspended from this point until OBF (F00026) is written to...
@@ -631,7 +516,7 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 			uint32 link = (p0 >> 21) & 0x3FFFF8;
 			
 //			if ((ypos!=507)&&(ypos!=25))
-//				WriteLog("\t%i%s%i link=0x%.8x\n",scanline,condition_to_str[cc],ypos>>1,link);
+//				//WriteLog("\t%i%s%i link=0x%.8x\n",scanline,condition_to_str[cc],ypos>>1,link);
 			switch (cc)
 			{
 			case CONDITION_EQUAL:
@@ -652,12 +537,12 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 				break;
 			case CONDITION_SECOND_HALF_LINE:
 				// This basically means branch if bit 10 of HC is set
-				//WriteLog("OP: Unexpected CONDITION_SECOND_HALF_LINE in BRANCH object\nOP: shuting down\n");
+				////WriteLog("OP: Unexpected CONDITION_SECOND_HALF_LINE in BRANCH object\nOP: shuting down\n");
 				//fclose(log_get());
 				//exit(0);
 				break;
 			default:
-				//WriteLog("OP: Unimplemented branch condition %i\n", cc);
+				////WriteLog("OP: Unimplemented branch condition %i\n", cc);
 			break;
 			}
 			break;
@@ -666,7 +551,7 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 		{
 //op_start_log = 0;
 			// unsure
-//WriteLog("OP: --> STOP\n");
+////WriteLog("OP: --> STOP\n");
 //			op_set_status_register(((p0>>3) & 0xFFFFFFFF));
 //This seems more likely...
 			op_set_current_object(p0);
@@ -682,7 +567,6 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 //			break;
 		}
 		default:
-			WriteLog("op: unknown object type %i\n", ((uint8)p0 & 0x07)); 
 			return;
 		}
 
@@ -732,7 +616,7 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 	// for use when using endian-corrected data (i.e., any of the *_word_read functions!)
 	uint16 * paletteRAM16 = (uint16 *)paletteRAM;
 
-//	WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
+//	//WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
 //		iwidth, op_bitmap_bit_depth[bitdepth], xpos, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), (flags&OPFLAG_RMW ? "yes" : "no"), (flags&OPFLAG_TRANS ? "yes" : "no"));
 
 // Is it OK to have a 0 for the data width??? (i.e., undocumented?)
@@ -745,7 +629,7 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 
 //#define OP_DEBUG_BMP
 //#ifdef OP_DEBUG_BMP
-//	WriteLog("bitmap %ix%i %ibpp at %i,%i firstpix=%i data=0x%.8x pitch %i hflipped=%s dwidth=%i (linked to 0x%.8x) Transluency=%s\n",
+//	//WriteLog("bitmap %ix%i %ibpp at %i,%i firstpix=%i data=0x%.8x pitch %i hflipped=%s dwidth=%i (linked to 0x%.8x) Transluency=%s\n",
 //		iwidth, height, op_bitmap_bit_depth[bitdepth], xpos, ypos, firstPix, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), dwidth, op_pointer, (flags&OPFLAG_RMW ? "yes" : "no"));
 //#endif
 
@@ -815,7 +699,7 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 //		rightMargin = lbufWidth;
 */
 if (depth > 5)
-	WriteLog("OP: We're about to encounter a divide by zero error!\n");
+	//WriteLog("OP: We're about to encounter a divide by zero error!\n");
 	// NOTE: We're just using endPos to figure out how much, if any, to clip by.
 	// ALSO: There may be another case where we start out of bounds and end out of bounds...!
 	// !!! FIX !!!
@@ -907,8 +791,6 @@ if (depth > 5)
 	}
 	else if (depth == 1)							// 2 BPP
 	{
-if (firstPix)
-	WriteLog("OP: Fixed bitmap @ 2 BPP requesting FIRSTPIX! (fp=%u)\n", firstPix);
 		index &= 0xFC;								// Top six bits form CLUT index
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
@@ -947,8 +829,6 @@ if (firstPix)
 	}
 	else if (depth == 2)							// 4 BPP
 	{
-if (firstPix)
-	WriteLog("OP: Fixed bitmap @ 4 BPP requesting FIRSTPIX! (fp=%u)\n", firstPix);
 		index &= 0xF0;								// Top four bits form CLUT index
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
@@ -1032,8 +912,6 @@ if (firstPix)
 	}
 	else if (depth == 4)							// 16 BPP
 	{
-if (firstPix)
-	WriteLog("OP: Fixed bitmap @ 16 BPP requesting FIRSTPIX! (fp=%u)\n", firstPix);
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
@@ -1074,9 +952,7 @@ if (firstPix)
 	{
 //Looks like Iron Soldier is the only game that uses 24BPP mode...
 //There *might* be others...
-//WriteLog("OP: Writing 24 BPP bitmap!\n");
-if (firstPix)
-	WriteLog("OP: Fixed bitmap @ 24 BPP requesting FIRSTPIX! (fp=%u)\n", firstPix);
+////WriteLog("OP: Writing 24 BPP bitmap!\n");
 		// Not sure, but I think RMW only works with 16 BPP and below, and only in CRY mode...
 		// The LSB of flags is OPFLAG_REFLECT, so sign extend it and OR 4 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 4) | 0x04;
@@ -1124,8 +1000,6 @@ void OPProcessScaledBitmap(uint64 p0, uint64 p1, uint64 p2, bool render)
 //Use the upper bits as an offset into the phrase depending on the BPP. That's how!
 	uint32 firstPix = (p1 >> 49) & 0x3F;
 //This is WEIRD! I'm sure I saw Atari Karts request 8 BPP FIRSTPIX! What happened???
-if (firstPix)
-	WriteLog("OP: FIRSTPIX != 0! (Scaled BM)\n");
 //#endif
 // We can ignore the RELEASE (high order) bit for now--probably forever...!
 //	uint8 flags = (p1 >> 45) & 0x0F;	// REFLECT, RMW, TRANS, RELEASE
@@ -1151,7 +1025,7 @@ if (firstPix)
 	int32 scaledWidthInPixels = (iwidth * phraseWidthToPixels[depth] * hscale) >> 5;
 	uint32 scaledPhrasePixels = (phraseWidthToPixels[depth] * hscale) >> 5;
 
-//	WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
+//	//WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
 //		iwidth, op_bitmap_bit_depth[bitdepth], xpos, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), (flags&OPFLAG_RMW ? "yes" : "no"), (flags&OPFLAG_TRANS ? "yes" : "no"));
 
 // Looks like an hscale of zero means don't draw!
@@ -1160,11 +1034,11 @@ if (firstPix)
 
 /*extern int start_logging;
 if (start_logging)
-	WriteLog("OP: Scaled bitmap %ix? %ibpp at %i,? hscale=%02X fpix=%i data=%08X pitch %i hflipped=%s dwidth=? (linked to %08X) Transluency=%s\n",
+	//WriteLog("OP: Scaled bitmap %ix? %ibpp at %i,? hscale=%02X fpix=%i data=%08X pitch %i hflipped=%s dwidth=? (linked to %08X) Transluency=%s\n",
 		iwidth, op_bitmap_bit_depth[depth], xpos, hscale, firstPix, data, pitch, (flagREFLECT ? "yes" : "no"), op_pointer, (flagRMW ? "yes" : "no"));*/
 //#define OP_DEBUG_BMP
 //#ifdef OP_DEBUG_BMP
-//	WriteLog("OP: Scaled bitmap %ix%i %ibpp at %i,%i firstpix=%i data=0x%.8x pitch %i hflipped=%s dwidth=%i (linked to 0x%.8x) Transluency=%s\n",
+//	//WriteLog("OP: Scaled bitmap %ix%i %ibpp at %i,%i firstpix=%i data=0x%.8x pitch %i hflipped=%s dwidth=%i (linked to 0x%.8x) Transluency=%s\n",
 //		iwidth, height, op_bitmap_bit_depth[bitdepth], xpos, ypos, firstPix, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), dwidth, op_pointer, (flags&OPFLAG_RMW ? "yes" : "no"));
 //#endif
 
@@ -1228,7 +1102,7 @@ if (start_logging)
 //the scaling factor is small. So fix it already! !!! FIX !!!
 /*if (scaledPhrasePixels == 0)
 {
-	WriteLog("OP: [Scaled] We're about to encounter a divide by zero error!\n");
+	//WriteLog("OP: [Scaled] We're about to encounter a divide by zero error!\n");
 	DumpScaledObject(p0, p1, p2);
 }//*/
 //NOTE: I'm almost 100% sure that this is wrong... And it is! :-p
@@ -1262,17 +1136,12 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 	if (startPos < 0)			// Case #1: Begin out, end in, L to R
 {
-extern int start_logging;
-if (start_logging)
-	WriteLog("OP: Scaled bitmap (%02X, %u BPP, spp=%u) start pos (%i) < 0...", hscale, op_bitmap_bit_depth[depth], scaledPhrasePixels, startPos);
 //		clippedWidth = 0 - startPos,
 		clippedWidth = (0 - startPos) << 5,
 //		dataClippedWidth = phraseClippedWidth = clippedWidth / scaledPhrasePixels,
 		dataClippedWidth = phraseClippedWidth = (clippedWidth / scaledPhrasePixelsUS) >> 5,
 //		startPos = 0 - (clippedWidth % scaledPhrasePixels);
 		startPos += (dataClippedWidth * scaledPhrasePixelsUS) >> 5;
-if (start_logging)
-	WriteLog(" [new sp=%i, cw=%i, dcw=pcw=%i]\n", startPos, clippedWidth, dataClippedWidth);
 }
 
 	if (endPos < 0)				// Case #2: Begin in, end out, R to L
@@ -1288,21 +1157,6 @@ if (start_logging)
 		dataClippedWidth = phraseClippedWidth = clippedWidth / scaledPhrasePixels,
 		startPos = lbufWidth + (clippedWidth % scaledPhrasePixels);
 
-extern int op_start_log;
-if (op_start_log && clippedWidth != 0)
-	WriteLog("OP: Clipped line. SP=%i, EP=%i, clip=%u, iwidth=%u, hscale=%02X\n", startPos, endPos, clippedWidth, iwidth, hscale);
-if (op_start_log && startPos == 13)
-{
-	WriteLog("OP: Scaled line. SP=%i, EP=%i, clip=%u, iwidth=%u, hscale=%02X, depth=%u, firstPix=%u\n", startPos, endPos, clippedWidth, iwidth, hscale, depth, firstPix);
-	DumpScaledObject(p0, p1, p2);
-	if (iwidth == 7)
-	{
-		WriteLog("    %08X: ", data);
-		for(int i=0; i<7*8; i++)
-			WriteLog("%02X ", JaguarReadByte(data+i));
-		WriteLog("\n");
-	}
-}
 	// If the image is sitting on the line buffer left or right edge, we need to compensate
 	// by decreasing the image phrase width accordingly.
 	iwidth -= phraseClippedWidth;
@@ -1331,8 +1185,6 @@ if (op_start_log && startPos == 13)
 
 	if (depth == 0)									// 1 BPP
 	{
-if (firstPix != 0)
-	WriteLog("OP: Scaled bitmap @ 1 BPP requesting FIRSTPIX!\n");
 		// The LSB of flags is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
@@ -1389,8 +1241,6 @@ if (firstPix != 0)
 	}
 	else if (depth == 1)							// 2 BPP
 	{
-if (firstPix != 0)
-	WriteLog("OP: Scaled bitmap @ 2 BPP requesting FIRSTPIX!\n");
 		index &= 0xFC;								// Top six bits form CLUT index
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
@@ -1448,8 +1298,6 @@ if (firstPix != 0)
 	}
 	else if (depth == 2)							// 4 BPP
 	{
-if (firstPix != 0)
-	WriteLog("OP: Scaled bitmap @ 4 BPP requesting FIRSTPIX!\n");
 		index &= 0xF0;								// Top four bits form CLUT index
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
@@ -1507,8 +1355,6 @@ if (firstPix != 0)
 	}
 	else if (depth == 3)							// 8 BPP
 	{
-if (firstPix)
-	WriteLog("OP: Scaled bitmap @ 8 BPP requesting FIRSTPIX! (fp=%u)\n", firstPix);
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
@@ -1562,8 +1408,6 @@ if (firstPix)
 	}
 	else if (depth == 4)							// 16 BPP
 	{
-if (firstPix != 0)
-	WriteLog("OP: Scaled bitmap @ 16 BPP requesting FIRSTPIX!\n");
 		// The LSB is OPFLAG_REFLECT, so sign extend it and OR 2 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
@@ -1621,10 +1465,6 @@ if (firstPix != 0)
 	}
 	else if (depth == 5)							// 24 BPP
 	{
-//I'm not sure that you can scale a 24 BPP bitmap properly--the JTRM seem to indicate as much.
-WriteLog("OP: Writing 24 BPP scaled bitmap!\n");
-if (firstPix != 0)
-	WriteLog("OP: Scaled bitmap @ 24 BPP requesting FIRSTPIX!\n");
 		// Not sure, but I think RMW only works with 16 BPP and below, and only in CRY mode...
 		// The LSB is OPFLAG_REFLECT, so sign extend it and or 4 into it.
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 4) | 0x04;

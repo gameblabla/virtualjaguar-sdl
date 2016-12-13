@@ -15,7 +15,6 @@
 #include "jaguar.h"
 #include "video.h"
 #include "gui.h"
-#include "sdlemu_opengl.h"
 #include "settings.h"								// Pull in "vjs" struct
 
 // Uncomment this for speed control (?)
@@ -184,7 +183,6 @@ int main(int argc, char * argv[])
 	VersionDone();
 	MemoryDone();
 	VideoDone();
-	log_done();	
 
 	// Free SDL components last...!
 	//SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_CDROM);

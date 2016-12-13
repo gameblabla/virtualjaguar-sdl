@@ -11,8 +11,6 @@
 #include <zlib.h>
 
 #include "unzip.h"
-#include "log.h"
-
 /* public globals */
 int	gUnzipQuiet = 0;		/* flag controls error messages */
 
@@ -33,7 +31,7 @@ void errormsg(const char * extmsg, const char * usermsg, const char * zipname)
 	if (!gUnzipQuiet)
 		printf("Error in zipfile %s\n%s\n", zipname, usermsg);
 	/* Output to log file with all informations */
-	WriteLog("Error in zipfile %s: %s\n", zipname, extmsg);
+	//WriteLog("Error in zipfile %s: %s\n", zipname, extmsg);
 }
 
 /* -------------------------------------------------------------------------
@@ -131,7 +129,7 @@ static int ecd_read(ZIP * zip)
 			/* double buffer */
 			buf_length = 2*buf_length;
 
-			WriteLog("Retry reading of zip ecd for %d bytes\n",buf_length);
+			//WriteLog("Retry reading of zip ecd for %d bytes\n",buf_length);
 
 		} else {
 			return -1;
@@ -517,7 +515,7 @@ static int inflate_file(FILE * in_file, unsigned in_size, unsigned char * out_da
 	 */
     if (err != Z_OK)
 	{
-		WriteLog("inflateInit error: %d\n", err);
+		//WriteLog("inflateInit error: %d\n", err);
         return -1;
 	}
 
@@ -529,7 +527,7 @@ static int inflate_file(FILE * in_file, unsigned in_size, unsigned char * out_da
 	{
 		if (in_size <= 0)
 		{
-			WriteLog("inflate error: compressed size too small\n");
+			//WriteLog("inflate error: compressed size too small\n");
 			free (in_buffer);
 			return -1;
 		}
@@ -544,7 +542,7 @@ static int inflate_file(FILE * in_file, unsigned in_size, unsigned char * out_da
 			break;
 		if (err != Z_OK)
 		{
-			WriteLog("inflate error: %d\n", err);
+			//WriteLog("inflate error: %d\n", err);
 			free (in_buffer);
 			return -1;
 		}
@@ -553,7 +551,7 @@ static int inflate_file(FILE * in_file, unsigned in_size, unsigned char * out_da
     err = inflateEnd(&d_stream);
 	if (err != Z_OK)
 	{
-		WriteLog("inflateEnd error: %d\n", err);
+		//WriteLog("inflateEnd error: %d\n", err);
 		free (in_buffer);
 		return -1;
 	}
@@ -562,7 +560,7 @@ static int inflate_file(FILE * in_file, unsigned in_size, unsigned char * out_da
 
 	if ((d_stream.avail_out > 0) || (in_size > 0))
 	{
-		WriteLog("zip size mismatch. %i\n", in_size);
+		//WriteLog("zip size mismatch. %i\n", in_size);
 		return -1;
 	}
 
@@ -688,7 +686,7 @@ static ZIP* cache_openzip(int pathtype, int pathindex, const char* zipfile) {
 			unsigned j;
 
 /*
-			WriteLog("Zip cache HIT  for %s\n", zipfile);
+			//WriteLog("Zip cache HIT  for %s\n", zipfile);
 */
 
 			/* reset the zip directory */
@@ -710,7 +708,7 @@ static ZIP* cache_openzip(int pathtype, int pathindex, const char* zipfile) {
 	/* not found */
 
 /*
-	WriteLog("Zip cache FAIL for %s\n", zipfile);
+	//WriteLog("Zip cache FAIL for %s\n", zipfile);
 */
 
 	/* open the zip */
@@ -812,7 +810,7 @@ static int equal_filename(const char * zipfile, const char * file)
 		s2++;
 	else
 		s2 = zipfile;
-//WriteLog("--> Comparing filenames: [%s] <-> [%s]\n", s1, s2);
+////WriteLog("--> Comparing filenames: [%s] <-> [%s]\n", s1, s2);
 
 	// This assumes that s1 is longer than s2... Might not be! !!! FIX !!!
 	while (*s1 && toupper(*s1) == toupper(*s2))

@@ -3,7 +3,6 @@
 
 #include <string.h>	// Why??? (for memset, etc... Lazy!) Dunno why, but this just strikes me as wrong...
 #include "types.h"
-#include "log.h"
 #include "version.h"
 #include "memory.h"
 #include "m68k.h"
@@ -17,7 +16,6 @@
 #include "anajoy.h"
 #include "joystick.h"
 #include "dac.h"
-#include "jagdasm.h"
 #include "cdrom.h"
 #include "eeprom.h"
 #include "cdi.h"

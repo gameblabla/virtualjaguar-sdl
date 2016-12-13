@@ -11,7 +11,7 @@
 #include "cdintf.h"									// System agnostic CD interface functions
 #include "cdrom.h"
 
-#define CDROM_LOG									// For CDROM logging, obviously
+//#define CDROM_LOG									// For CDROM logging, obviously
 
 /*
 BUTCH     equ  $DFFF00		; base of Butch=interrupt control register, R/W
@@ -310,7 +310,6 @@ uint16 CDROMReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 			case 5:
 				data = 0x0400;
 			}//*/
-			WriteLog("CDROM: Reading DS_DATA (???), cdCmd=$%04X\n", cdCmd);
 		}
 		else if ((cdCmd & 0xFF00) == 0x0200)			// Stop CD
 		{
@@ -334,7 +333,6 @@ uint16 CDROMReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 			case 5:
 				data = 0x0400;
 			}//*/
-			WriteLog("CDROM: Reading DS_DATA (stop), cdCmd=$%04X\n", cdCmd);
 		}
 		else if ((cdCmd & 0xFF00) == 0x0300)		// Read session TOC (overview?)
 		{
@@ -368,12 +366,10 @@ TOC: 2 10 00  b 00:00:00 00 54:26:17   <-- Track #11
 			if (data == 0xFF)	// Failed...
 			{
 				data = 0x0400;
-				WriteLog("CDROM: Requested invalid session #%u (or failed to load TOC, or bad cdPtr value)\n", cdCmd & 0xFF);
 			}
 			else
 			{
 				data |= (0x20 | cdPtr++) << 8;
-				WriteLog("CDROM: Reading DS_DATA (session #%u TOC byte #%u): $%04X\n", cdCmd & 0xFF, cdPtr, data);
 			}
 
 /*			bool isValidSession = ((cdCmd & 0xFF) == 0 ? true : false);//Hardcoded... !!! FIX !!!
@@ -432,7 +428,6 @@ TOC: 2 10 00  b 00:00:00 00 54:26:17   <-- Track #11
 			if (trackNum > maxTrack)
 			{
 				data = 0x400;
-WriteLog("CDROM: Requested invalid track #%u for session #%u\n", trackNum, cdCmd & 0xFF);
 			}
 			else
 			{
@@ -440,8 +435,6 @@ WriteLog("CDROM: Requested invalid track #%u for session #%u\n", trackNum, cdCmd
 					data = (cdPtr << 8) | trackNum;
 				else if (cdPtr < 0x65)
 					data = (cdPtr << 8) | CDIntfGetTrackInfo(trackNum, (cdPtr - 2) & 0x0F);
-
-WriteLog("CDROM: Reading DS_DATA (session #%u, full TOC byte #%u): $%04X\n", cdCmd & 0xFF, (cdPtr+1) & 0x0F, data);
 
 				cdPtr++;
 				if (cdPtr == 0x65)
@@ -488,28 +481,23 @@ WriteLog("CDROM: Reading DS_DATA (session #%u, full TOC byte #%u): $%04X\n", cdC
 		else if ((cdCmd & 0xFF00) == 0x1500)		// Read CD mode
 		{
 			data = cdCmd | 0x0200;	// ?? not sure ?? [Seems OK]
-			WriteLog("CDROM: Reading DS_DATA (mode), cdCmd=$%04X\n", cdCmd);
 		}
 		else if ((cdCmd & 0xFF00) == 0x1800)		// Spin up session #
 		{
 			data = cdCmd;
-			WriteLog("CDROM: Reading DS_DATA (spin up session), cdCmd=$%04X\n", cdCmd);
 		}
 		else if ((cdCmd & 0xFF00) == 0x5400)		// Read # of sessions
 		{
 			data = cdCmd | 0x00;	// !!! Hardcoded !!! FIX !!!
-			WriteLog("CDROM: Reading DS_DATA (# of sessions), cdCmd=$%04X\n", cdCmd);
 		}
 		else if ((cdCmd & 0xFF00) == 0x7000)		// Read oversampling
 		{
 //NOTE: This setting will probably affect the # of DSP interrupts that need to happen. !!! FIX !!!
 			data = cdCmd;
-			WriteLog("CDROM: Reading DS_DATA (oversampling), cdCmd=$%04X\n", cdCmd);
 		}
 		else
 		{
 			data = 0x0400;
-			WriteLog("CDROM: Reading DS_DATA, unhandled cdCmd=$%04X\n", cdCmd);
 		}
 	}
 	else if (offset == DS_DATA && !haveCDGoodness)
@@ -570,12 +558,10 @@ void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 		if ((data & 0xFF00) == 0x0200)				// Stop CD
 		{
 			cdPtr = 0;
-			WriteLog("CDROM: Stopping CD\n", data & 0xFF);
 		}
 		else if ((data & 0xFF00) == 0x0300)			// Read session TOC (short? overview?)
 		{
 			cdPtr = 0;
-			WriteLog("CDROM: Reading TOC for session #%u\n", data & 0xFF);
 		}
 //Not sure how these three acknowledge...
 		else if ((data & 0xFF00) == 0x1000)			// Seek to minute position
@@ -591,7 +577,6 @@ void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 			frm = data & 0x00FF;
 			block = (((min * 60) + sec) * 75) + frm;
 			cdBufPtr = 2352;						// Ensure that SSI read will do so immediately
-			WriteLog("CDROM: Seeking to %u:%02u:%02u [block #%u]\n", min, sec, frm, block);
 		}
 		else if ((data & 0xFF00) == 0x1400)			// Read "full" TOC for session
 		{
@@ -599,30 +584,25 @@ void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 			minTrack = CDIntfGetSessionInfo(data & 0xFF, 0),
 			maxTrack = CDIntfGetSessionInfo(data & 0xFF, 1);
 			trackNum = minTrack;
-			WriteLog("CDROM: Reading \"full\" TOC for session #%u (min=%u, max=%u)\n", data & 0xFF, minTrack, maxTrack);
 		}
 		else if ((data & 0xFF00) == 0x1500)			// Set CDROM mode
 		{
 			// Mode setting is as follows: bit 0 set -> single speed, bit 1 set -> double,
 			// bit 3 set -> multisession CD, bit 3 unset -> audio CD
-			WriteLog("CDROM: Setting mode $%02X\n", data & 0xFF);
 		}
 		else if ((data & 0xFF00) == 0x1800)			// Spin up session #
 		{
-			WriteLog("CDROM: Spinning up session #%u\n", data & 0xFF);
 		}
 		else if ((data & 0xFF00) == 0x5400)			// Read # of sessions
 		{
-			WriteLog("CDROM: Reading # of sessions\n", data & 0xFF);
 		}
 		else if ((data & 0xFF00) == 0x7000)			// Set oversampling rate
 		{
 			// 1 = none, 2 = 2x, 3 = 4x, 4 = 8x
 			uint32 rates[5] = { 0, 1, 2, 4, 8 };
-			WriteLog("CDROM: Setting oversample rate to %uX\n", rates[(data & 0xFF)]);
+
 		}
-		else
-			WriteLog("CDROM: Unknown command $%04X\n", data);
+
 	}//*/
 
 	if (offset == UNKNOWN + 2)
@@ -781,7 +761,6 @@ uint16 GetWordFromButchSSI(uint32 offset, uint32 who/*= UNKNOWN*/)
 
 	if (cdBufPtr >= 2352)
 	{
-WriteLog("CDROM: %s reading block #%u...\n", whoName[who], block);
 		//No error checking. !!! FIX !!!
 //NOTE: We have to subtract out the 1st track start as well (in cdintf_foo.cpp)!
 //		CDIntfReadBlock(block - 150, cdBuf);
@@ -807,10 +786,6 @@ WriteLog("CDROM: %s reading block #%u...\n", whoName[who], block);
 /*extern bool doDSPDis;
 if (block == 244968)
 	doDSPDis = true;//*/
-
-WriteLog("[%04X:%01X]", GET16(cdBuf, cdBufPtr), offset & 0x0F);
-if (cdBufPtr % 32 == 30)
-	WriteLog("\n");
 
 //	return GET16(cdBuf, cdBufPtr);
 //This probably isn't endian safe...
@@ -846,7 +821,6 @@ void SetSSIWordsXmittedFromButch(void)
 
 	if (cdBufPtr >= 2352)
 	{
-WriteLog("CDROM: Reading block #%u...\n", block);
 		//No error checking. !!! FIX !!!
 //NOTE: We have to subtract out the 1st track start as well (in cdintf_foo.cpp)!
 //		CDIntfReadBlock(block - 150, cdBuf);
@@ -881,10 +855,6 @@ WriteLog("\n***** foo = %u, block = %u *****\n\n", foo, block);
 }//*/
 	}
 
-
-WriteLog("[%02X%02X %02X%02X]", cdBuf[cdBufPtr+1], cdBuf[cdBufPtr+0], cdBuf[cdBufPtr+3], cdBuf[cdBufPtr+2]);
-if (cdBufPtr % 32 == 28)
-	WriteLog("\n");
 
 //This probably isn't endian safe...
 // But then again... It seems that even though the data on the CD is organized as

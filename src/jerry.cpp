@@ -150,7 +150,7 @@
 
 //#define JERRY_DEBUG
 
-/*static*/ uint8 * jerry_ram_8;
+static uint8 * jerry_ram_8;
 
 //#define JERRY_CONFIG	0x4002						// ??? What's this ???
 
@@ -200,7 +200,7 @@ void jerry_i2s_exec(uint32 cycles)
 			jerry_i2s_interrupt_timer += jerryI2SCycles;
 #ifdef JERRY_DEBUG
 			if (jerry_i2s_interrupt_timer < 0)
-				WriteLog("JERRY: Missed generating an interrupt (missed %u)!\n", (-jerry_i2s_interrupt_timer / jerryI2SCycles) + 1);
+				//WriteLog("JERRY: Missed generating an interrupt (missed %u)!\n", (-jerry_i2s_interrupt_timer / jerryI2SCycles) + 1);
 #endif
 		}
 	}
@@ -214,6 +214,7 @@ void jerry_i2s_exec(uint32 cycles)
 		jerry_i2s_interrupt_timer -= cycles;
 		if (jerry_i2s_interrupt_timer <= 0)
 		{
+			#ifdef CDROM_EMU
 //This is probably wrong as well (i.e., need to check enable lines)... !!! FIX !!! [DONE]
 			if (ButchIsReadyToSend())//Not sure this is right spot to check...
 			{
@@ -221,6 +222,7 @@ void jerry_i2s_exec(uint32 cycles)
 				SetSSIWordsXmittedFromButch();
 				DSPSetIRQLine(DSPIRQ_SSI, ASSERT_LINE);
 			}
+			#endif
 			jerry_i2s_interrupt_timer += 602;
 		}
 	}
@@ -228,7 +230,7 @@ void jerry_i2s_exec(uint32 cycles)
 
 void jerry_reset_i2s_timer(void)
 {
-	//WriteLog("i2s: reseting\n");
+	////WriteLog("i2s: reseting\n");
 //This is really SCLK... !!! FIX !!!
 	jerry_i2s_interrupt_divide = 8;
 	jerry_i2s_interrupt_timer = -1;
@@ -243,7 +245,7 @@ void jerry_reset_timer_1(void)
 		jerry_timer_1_counter = (jerry_timer_1_prescaler + 1) * (jerry_timer_1_divider + 1);
 
 //	if (jerry_timer_1_counter)
-//		WriteLog("jerry: reseting timer 1 to 0x%.8x (%i)\n",jerry_timer_1_counter,jerry_timer_1_counter);
+//		//WriteLog("jerry: reseting timer 1 to 0x%.8x (%i)\n",jerry_timer_1_counter,jerry_timer_1_counter);
 }
 
 void jerry_reset_timer_2(void)
@@ -257,7 +259,7 @@ void jerry_reset_timer_2(void)
 		jerry_timer_2_counter = (jerry_timer_2_prescaler + 1) * (jerry_timer_2_divider + 1);
 
 //	if (jerry_timer_2_counter)
-//		WriteLog("jerry: reseting timer 2 to 0x%.8x (%i)\n",jerry_timer_2_counter,jerry_timer_2_counter);
+//		//WriteLog("jerry: reseting timer 2 to 0x%.8x (%i)\n",jerry_timer_2_counter,jerry_timer_2_counter);
 }
 
 void JERRYExecPIT(uint32 cycles)
@@ -319,7 +321,7 @@ void jerry_reset(void)
 
 void jerry_done(void)
 {
-	WriteLog("JERRY: M68K Interrupt control ($F10020) = %04X\n", GET16(jerry_ram_8, 0x20));
+	//WriteLog("JERRY: M68K Interrupt control ($F10020) = %04X\n", GET16(jerry_ram_8, 0x20));
 	memory_free(jerry_ram_8);
 	clock_done();
 	anajoy_done();
@@ -346,7 +348,7 @@ void JERRYSetPendingIRQ(int irq)
 uint8 JERRYReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
 {
 #ifdef JERRY_DEBUG
-	WriteLog("JERRY: Reading byte at %06X\n", offset);
+	//WriteLog("JERRY: Reading byte at %06X\n", offset);
 #endif
 	if ((offset >= DSP_CONTROL_RAM_BASE) && (offset < DSP_CONTROL_RAM_BASE+0x20))
 		return DSPReadByte(offset, who);
@@ -417,7 +419,7 @@ uint8 JERRYReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
 uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 {
 #ifdef JERRY_DEBUG
-	WriteLog("JERRY: Reading word at %06X\n", offset);
+	//WriteLog("JERRY: Reading word at %06X\n", offset);
 #endif
 
 	if ((offset >= DSP_CONTROL_RAM_BASE) && (offset < DSP_CONTROL_RAM_BASE+0x20))
@@ -474,7 +476,7 @@ uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 		return eeprom_word_read(offset);
 
 /*if (offset >= 0xF1D000)
-	WriteLog("JERRY: Reading word at %08X [%04X]...\n", offset, ((uint16)jerry_ram_8[(offset+0)&0xFFFF] << 8) | jerry_ram_8[(offset+1)&0xFFFF]);//*/
+	//WriteLog("JERRY: Reading word at %08X [%04X]...\n", offset, ((uint16)jerry_ram_8[(offset+0)&0xFFFF] << 8) | jerry_ram_8[(offset+1)&0xFFFF]);//*/
 
 	offset &= 0xFFFF;				// Prevent crashing...!
 	return ((uint16)jerry_ram_8[offset+0] << 8) | jerry_ram_8[offset+1];
@@ -486,7 +488,7 @@ uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 void JERRYWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 {
 #ifdef JERRY_DEBUG
-	WriteLog("jerry: writing byte %.2x at 0x%.6x\n",data,offset);
+	//WriteLog("jerry: writing byte %.2x at 0x%.6x\n",data,offset);
 #endif
 	if ((offset >= DSP_CONTROL_RAM_BASE) && (offset < DSP_CONTROL_RAM_BASE+0x20))
 	{
@@ -501,7 +503,7 @@ void JERRYWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 	// SCLK ($F1A150--8 bits wide)
 	else if ((offset >= 0xF1A152) && (offset <= 0xF1A153))
 	{
-//		WriteLog("JERRY: Writing %02X to SCLK...\n", data);
+//		//WriteLog("JERRY: Writing %02X to SCLK...\n", data);
 		if ((offset & 0x03) == 2)
 			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0x00FF) | ((uint32)data << 8);
 		else
@@ -560,11 +562,6 @@ void JERRYWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 		clock_byte_write(offset, data);
 		return;
 	}
-	// JERRY -> 68K interrupt enables/latches (need to be handled!)
-	else if (offset >= 0xF10020 && offset <= 0xF10023)
-	{
-WriteLog("JERRY: (68K int en/lat - Unhandled!) Tried to write $%02X to $%08X!\n", data, offset);
-	}
 	else if ((offset >= 0xF17C00) && (offset <= 0xF17C01))
 	{
 		anajoy_byte_write(offset, data);
@@ -595,7 +592,7 @@ WriteLog("JERRY: (68K int en/lat - Unhandled!) Tried to write $%02X to $%08X!\n"
 void JERRYWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 {
 #ifdef JERRY_DEBUG
-	WriteLog( "JERRY: Writing word %04X at %06X\n", data, offset);
+	//WriteLog( "JERRY: Writing word %04X at %06X\n", data, offset);
 #endif
 
 	if ((offset >= DSP_CONTROL_RAM_BASE) && (offset < DSP_CONTROL_RAM_BASE+0x20))
@@ -610,8 +607,6 @@ void JERRYWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 	}
 	else if (offset == 0xF1A152)					// Bottom half of SCLK ($F1A150)
 	{
-		WriteLog("JERRY: Writing %04X to SCLK (by %s)...\n", data, whoName[who]);
-//This should *only* be enabled when SMODE has its INTERNAL bit set! !!! FIX !!!
 		jerry_i2s_interrupt_divide = (uint8)data;
 		jerry_i2s_interrupt_timer = -1;
 		jerry_i2s_exec(0);
@@ -652,11 +647,6 @@ void JERRYWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 	{
 		clock_word_write(offset, data);
 		return;
-	}
-	// JERRY -> 68K interrupt enables/latches (need to be handled!)
-	else if (offset >= 0xF10020 && offset <= 0xF10022)
-	{
-WriteLog("JERRY: (68K int en/lat - Unhandled!) Tried to write $%04X to $%08X!\n", data, offset);
 	}
 	else if (offset >= 0xF17C00 && offset < 0xF17C02)
 	{

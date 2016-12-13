@@ -19,7 +19,6 @@ extern int jaguar_active_memory_dumps;
 
 // Local global variables
 
-int start_logging = 0;
 uint8_t blitter_working = 0;
 bool startConciseBlitLogging = false;
 bool logBlit = false;
@@ -32,7 +31,6 @@ static uint8_t blitter_ram[0x100];
 
 bool specialLog = false;
 extern int effect_start;
-extern int blit_start_log;
 void BlitterMidsummer(uint32_t cmd);
 void BlitterMidsummer2(void);
 
@@ -1200,7 +1198,6 @@ void blitter_blit(uint32_t cmd)
 		break;
 //This really isn't a valid bit combo for A2... Shouldn't this cause the blitter to just say no?
 	case XADDINC:
-WriteLog("BLIT: Asked to use invalid bit combo (XADDINC) for A2...\n");
 		// add the contents of the increment register
 		// since there is no register for a2 we just add 1
 //Let's do nothing, since it's not listed as a valid bit combo...
@@ -1445,48 +1442,6 @@ Blit! (00110000 <- 0010B2A8) count: 12 x 12, A1/2_FLAGS: 000042E2/00000020 [cmd:
 
 */
 //extern int op_start_log;
-if (blit_start_log)
-{
-	const char * ctrlStr[4] = { "XADDPHR\0", "XADDPIX\0", "XADD0\0", "XADDINC\0" };
-	const char * bppStr[8] = { "1bpp\0", "2bpp\0", "4bpp\0", "8bpp\0", "16bpp\0", "32bpp\0", "???\0", "!!!\0" };
-	const char * opStr[16] = { "LFU_CLEAR", "LFU_NSAND", "LFU_NSAD", "LFU_NOTS", "LFU_SAND", "LFU_NOTD", "LFU_N_SXORD", "LFU_NSORND",
-		"LFU_SAD", "LFU_XOR", "LFU_D", "LFU_NSORD", "LFU_REPLACE", "LFU_SORND", "LFU_SORD", "LFU_ONE" };
-	uint32_t /*src = cmd & 0x07, dst = (cmd >> 3) & 0x07, misc = (cmd >> 6) & 0x03,
-		a1ctl = (cmd >> 8) & 0x07,*/ mode = (cmd >> 11) & 0x07/*, ity = (cmd >> 14) & 0x0F,
-		zop = (cmd >> 18) & 0x07, op = (cmd >> 21) & 0x0F, ctrl = (cmd >> 25) & 0x3F*/;
-	uint32_t a1f = REG(A1_FLAGS), a2f = REG(A2_FLAGS);
-	uint32_t p1 = a1f & 0x07, p2 = a2f & 0x07,
-		d1 = (a1f >> 3) & 0x07, d2 = (a2f >> 3) & 0x07,
-		zo1 = (a1f >> 6) & 0x07, zo2 = (a2f >> 6) & 0x07,
-		w1 = (a1f >> 9) & 0x3F, w2 = (a2f >> 9) & 0x3F,
-		ac1 = (a1f >> 16) & 0x1F, ac2 = (a2f >> 16) & 0x1F;
-	uint32_t iw1 = ((0x04 | (w1 & 0x03)) << ((w1 & 0x3C) >> 2)) >> 2;
-	uint32_t iw2 = ((0x04 | (w2 & 0x03)) << ((w2 & 0x3C) >> 2)) >> 2;
-	WriteLog("Blit! (%08X %s %08X) count: %d x %d, A1/2_FLAGS: %08X/%08X [cmd: %08X]\n", a1_addr, (mode&0x01 ? "->" : "<-"), a2_addr, n_pixels, n_lines, a1f, a2f, cmd);
-//	WriteLog(" CMD -> src: %d, dst: %d, misc: %d, a1ctl: %d, mode: %d, ity: %1X, z-op: %d, op: %1X, ctrl: %02X\n", src, dst, misc, a1ctl, mode, ity, zop, op, ctrl);
-
-	WriteLog(" CMD -> src: %s%s%s ", (cmd & 0x0001 ? "SRCEN " : ""), (cmd & 0x0002 ? "SRCENZ " : ""), (cmd & 0x0004 ? "SRCENX" : ""));
-	WriteLog("dst: %s%s%s ", (cmd & 0x0008 ? "DSTEN " : ""), (cmd & 0x0010 ? "DSTENZ " : ""), (cmd & 0x0020 ? "DSTWRZ" : ""));
-	WriteLog("misc: %s%s ", (cmd & 0x0040 ? "CLIP_A1 " : ""), (cmd & 0x0080 ? "???" : ""));
-	WriteLog("a1ctl: %s%s%s ", (cmd & 0x0100 ? "UPDA1F " : ""), (cmd & 0x0200 ? "UPDA1 " : ""), (cmd & 0x0400 ? "UPDA2" : ""));
-	WriteLog("mode: %s%s%s ", (cmd & 0x0800 ? "DSTA2 " : ""), (cmd & 0x1000 ? "GOURD " : ""), (cmd & 0x2000 ? "GOURZ" : ""));
-	WriteLog("ity: %s%s%s%s ", (cmd & 0x4000 ? "TOPBEN " : ""), (cmd & 0x8000 ? "TOPNEN " : ""), (cmd & 0x00010000 ? "PATDSEL" : ""), (cmd & 0x00020000 ? "ADDDSEL" : ""));
-	WriteLog("z-op: %s%s%s ", (cmd & 0x00040000 ? "ZMODELT " : ""), (cmd & 0x00080000 ? "ZMODEEQ " : ""), (cmd & 0x00100000 ? "ZMODEGT" : ""));
-	WriteLog("op: %s ", opStr[(cmd >> 21) & 0x0F]);
-	WriteLog("ctrl: %s%s%s%s%s%s\n", (cmd & 0x02000000 ? "CMPDST " : ""), (cmd & 0x04000000 ? "BCOMPEN " : ""), (cmd & 0x08000000 ? "DCOMPEN " : ""), (cmd & 0x10000000 ? "BKGWREN " : ""), (cmd & 0x20000000 ? "BUSHI " : ""), (cmd & 0x40000000 ? "SRCSHADE" : ""));
-
-	if (UPDA1)
-		WriteLog("  A1 step values: %d (X), %d (Y)\n", a1_step_x >> 16, a1_step_y >> 16);
-
-	if (UPDA2)
-		WriteLog("  A2 step values: %d (X), %d (Y) [mask (%sused): %08X - %08X/%08X]\n", a2_step_x >> 16, a2_step_y >> 16, (a2f & 0x8000 ? "" : "un"), REG(A2_MASK), a2_mask_x, a2_mask_y);
-
-	WriteLog("  A1 -> pitch: %d phrases, depth: %s, z-off: %d, width: %d (%02X), addctl: %s %s %s %s\n", 1 << p1, bppStr[d1], zo1, iw1, w1, ctrlStr[ac1&0x03], (ac1&0x04 ? "YADD1" : "YADD0"), (ac1&0x08 ? "XSIGNSUB" : "XSIGNADD"), (ac1&0x10 ? "YSIGNSUB" : "YSIGNADD"));
-	WriteLog("  A2 -> pitch: %d phrases, depth: %s, z-off: %d, width: %d (%02X), addctl: %s %s %s %s\n", 1 << p2, bppStr[d2], zo2, iw2, w2, ctrlStr[ac2&0x03], (ac2&0x04 ? "YADD1" : "YADD0"), (ac2&0x08 ? "XSIGNSUB" : "XSIGNADD"), (ac2&0x10 ? "YSIGNSUB" : "YSIGNADD"));
-	WriteLog("        A1 x/y: %d/%d, A2 x/y: %d/%d Pattern: %08X%08X SRCDATA: %08X%08X\n", a1_x >> 16, a1_y >> 16, a2_x >> 16, a2_y >> 16, REG(PATTERNDATA), REG(PATTERNDATA + 4), REG(SRCDATA), REG(SRCDATA + 4));
-//	blit_start_log = 0;
-//	op_start_log = 1;
-}
 
 	blitter_working = 1;
 //#ifndef USE_GENERIC_BLITTER
@@ -1524,7 +1479,6 @@ void blitter_reset(void)
 
 void blitter_done(void)
 {
-	WriteLog("BLIT: Done.\n");
 }
 
 uint8 BlitterReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
@@ -1671,47 +1625,5 @@ doGPUDis = true;
 
 void LogBlit(void)
 {
-	uint32 cmd = GET32(blitter_ram, 0x38);
 
-	WriteLog("Blit!\n");
-	WriteLog("  cmd      = %08X\n", cmd);
-	WriteLog("  a1_base  = %08X\n", a1_addr);
-	WriteLog("  a1_pitch = %d\n", a1_pitch);
-	WriteLog("  a1_psize = %d\n", a1_psize);
-	WriteLog("  a1_width = %d\n", a1_width);
-	WriteLog("  a1_xadd  = %f (phrase=%d)\n", (float)a1_xadd / 65536.0, a1_phrase_mode);
-	WriteLog("  a1_yadd  = %f\n", (float)a1_yadd / 65536.0);
-	WriteLog("  a1_xstep = %f\n", (float)a1_step_x / 65536.0);
-	WriteLog("  a1_ystep = %f\n", (float)a1_step_y / 65536.0);
-	WriteLog("  a1_x     = %f\n", (float)a1_x / 65536.0);
-	WriteLog("  a1_y     = %f\n", (float)a1_y / 65536.0);
-	WriteLog("  a1_zoffs = %i\n",a1_zoffs);
-
-	WriteLog("  a2_base  = %08X\n", a2_addr);
-	WriteLog("  a2_pitch = %d\n", a2_pitch);
-	WriteLog("  a2_psize = %d\n", a2_psize);
-	WriteLog("  a2_width = %d\n", a2_width);
-	WriteLog("  a2_xadd  = %f (phrase=%d)\n", (float)a2_xadd / 65536.0, a2_phrase_mode);
-	WriteLog("  a2_yadd  = %f\n", (float)a2_yadd / 65536.0);
-	WriteLog("  a2_xstep = %f\n", (float)a2_step_x / 65536.0);
-	WriteLog("  a2_ystep = %f\n", (float)a2_step_y / 65536.0);
-	WriteLog("  a2_x     = %f\n", (float)a2_x / 65536.0);
-	WriteLog("  a2_y     = %f\n", (float)a2_y / 65536.0);
-	WriteLog("  a2_mask_x= 0x%.4x\n",a2_mask_x);
-	WriteLog("  a2_mask_y= 0x%.4x\n",a2_mask_y);
-	WriteLog("  a2_zoffs = %i\n",a2_zoffs);
-
-	WriteLog("  count    = %d x %d\n", n_pixels, n_lines);
-
-	WriteLog("  COMMAND  = %08X\n", cmd);
-	WriteLog("  DSTEN    = %s\n", (DSTEN ? "1" : "0"));
-	WriteLog("  SRCEN    = %s\n", (SRCEN ? "1" : "0"));
-	WriteLog("  PATDSEL  = %s\n", (PATDSEL ? "1" : "0"));
-	WriteLog("  COLOR    = %08X\n", REG(PATTERNDATA));
-	WriteLog("  DCOMPEN  = %s\n", (DCOMPEN ? "1" : "0"));
-	WriteLog("  BCOMPEN  = %s\n", (BCOMPEN ? "1" : "0"));
-	WriteLog("  CMPDST   = %s\n", (CMPDST ? "1" : "0"));
-	WriteLog("  GOURZ    = %s\n", (GOURZ ? "1" : "0"));
-	WriteLog("  GOURD    = %s\n", (GOURD ? "1" : "0"));
-	WriteLog("  SRCSHADE = %s\n", (SRCSHADE ? "1" : "0"));
 }
