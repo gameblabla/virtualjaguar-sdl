@@ -9,7 +9,7 @@
 TOOLCHAIN = /opt/gcw0-toolchain
 CC = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
 LD = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
-TARGET     = vj$(EXESUFFIX)
+TARGET     = vj_nodsp$(EXESUFFIX)
 
 # Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
 CFLAGS = -Ofast -mips32r2 -fdata-sections -ffunction-sections -fno-exceptions -fno-rtti -fno-PIE -D__GCCUNIX__ -DGCW0 -DGCW
@@ -27,7 +27,6 @@ OBJS = \
 	obj/clock.o \
 	obj/crc32.o \
 	obj/dac.o \
-	obj/dsp.o \
 	obj/eeprom.o \
 	obj/gpu.o \
 	obj/gui.o \

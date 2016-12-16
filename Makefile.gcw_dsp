@@ -6,15 +6,16 @@
 # easier for the maintainers. :-)
 #
 
-CC         = gcc
-LD         = gcc
+TOOLCHAIN = /opt/gcw0-toolchain
+CC = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
+LD = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
 TARGET     = vj$(EXESUFFIX)
 
 # Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
-CFLAGS = -Wall -Ofast -march=native -fno-exceptions -fno-rtti -fno-PIE `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU
-LDFLAGS = -Wl,--as-needed -flto -s
+CFLAGS = -Ofast -mips32r2 -fdata-sections -ffunction-sections -fno-exceptions -fno-rtti -fno-PIE -D__GCCUNIX__ -DGCW0 -DGCW -DDSP_EMU
+LDFLAGS = -Wl,--as-needed -Wl,--gc-sections -flto -s
 
-LIBS = `sdl-config --libs` -lz $(GLLIB)
+LIBS = -lSDL -lz $(GLLIB)
 
 INCS = -I. -Isrc -Isrc/include
 
@@ -42,7 +43,7 @@ OBJS = \
 	obj/version.o \
 	obj/video.o \
 	obj/vj.o
-
+	
 all: obj $(TARGET)
 
 clean:
@@ -66,9 +67,7 @@ obj/%.o: src/%.cpp
 
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
-#	strip --strip-all vj$(EXESUFFIX)
-#	upx -9 vj$(EXESUFFIX)
-
+	
 # Other stuff that has unusual dependencies
 
 obj/gui.o: src/gui.cpp src/include/gui.h
@@ -100,4 +99,4 @@ obj/m68kops.h: obj/m68kmake$(EXESUFFIX)
 	obj/m68kmake obj src/m68k_in.c
 
 obj/m68kmake$(EXESUFFIX): src/m68kmake.c src/m68k_in.c
-	$(CC) $(WARNINGS) src/m68kmake.c -o obj/m68kmake$(EXESUFFIX)
+	gcc $(WARNINGS) src/m68kmake.c -o obj/m68kmake$(EXESUFFIX)

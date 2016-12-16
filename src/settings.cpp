@@ -35,7 +35,11 @@ void LoadVJSettings(void)
 	vjs.joyport = 0;
 	vjs.hardwareTypeNTSC = true;
 	vjs.useJaguarBIOS = false;
+	#ifdef DSP_EMU
 	if (vjs.DSPEnabled != true || vjs.DSPEnabled != false) vjs.DSPEnabled = true;
+	#else
+	if (vjs.DSPEnabled != true || vjs.DSPEnabled != false) vjs.DSPEnabled = false;
+	#endif
 	vjs.usePipelinedDSP = false;
 	vjs.fullscreen = false;
 	vjs.useOpenGL = 0;

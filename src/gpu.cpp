@@ -664,7 +664,9 @@ void GPUWriteLong(uint32_t offset, uint32_t data, uint32_t who/*=UNKNOWN*/)
 ////WriteLog("CPU->GPU interrupt\n");
 				GPUSetIRQLine(0, ASSERT_LINE);
 				m68k_end_timeslice();
+				#ifdef DSP_EMU
 				dsp_releaseTimeslice();
+				#endif
 				data &= ~0x04;
 			}
 

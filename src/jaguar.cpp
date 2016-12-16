@@ -728,7 +728,9 @@ void jaguar_init(void)
 
 	m68k_set_cpu_type(M68K_CPU_TYPE_68000);
 	GPUInit();
+	#ifdef DSP_EMU
 	DSPInit();
+	#endif
 	tom_init();
 	jerry_init();
 #ifdef CDROM_EMU
@@ -747,7 +749,9 @@ void jaguar_reset(void)
 	tom_reset();
 	jerry_reset();
 	GPUReset();
+	#ifdef DSP_EMU
 	DSPReset();
+	#endif
 #ifdef CDROM_EMU
 	CDROMReset();
 #endif
@@ -761,7 +765,9 @@ void jaguar_done(void)
 	CDROMDone();
 #endif
 	GPUDone();
+	#ifdef DSP_EMU
 	DSPDone();
+	#endif
 	tom_done();
 	jerry_done();
 
@@ -839,6 +845,7 @@ if (effect_start)
 //	//WriteLog("About to execute GPU (%u)...\n", i);
 		GPUExec(RISCCyclesPerScanline);
 
+		#ifdef DSP_EMU
 		if (vjs.DSPEnabled)
 		{
 			if (vjs.usePipelinedDSP)
@@ -847,6 +854,7 @@ if (effect_start)
 				DSPExec(RISCCyclesPerScanline);		// Ordinary non-pipelined DSP
 //			DSPExecComp(RISCCyclesPerScanline);		// Comparison core
 		}
+		#endif
 
 //if (start_logging)
 //	//WriteLog("About to execute OP (%u)...\n", i);
