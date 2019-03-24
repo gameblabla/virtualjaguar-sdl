@@ -727,7 +727,7 @@ if (who != DSP)
 				{
 					JERRYSetPendingIRQ(IRQ2_DSP);
 					dsp_releaseTimeslice();
-					m68k_set_irq(7);			// Set 68000 NMI...
+					m68k_set_irq(2);			// Set 68000 NMI...
 				}
 				data &= ~CPUINT;
 			}
