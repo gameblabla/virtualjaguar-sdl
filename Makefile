@@ -10,9 +10,8 @@ CC         = gcc
 LD         = gcc
 TARGET     = vj$(EXESUFFIX)
 
-# Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
-CFLAGS = -Wall -Ofast -march=native -fno-exceptions -fno-rtti -fno-PIE `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU
-LDFLAGS = -Wl,--as-needed -flto -s
+CFLAGS = -Wall -O0 -g `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU
+LDFLAGS =
 
 LIBS = `sdl-config --libs` -lz $(GLLIB)
 
@@ -55,14 +54,9 @@ obj:
 obj/%.o: src/%.c src/include/%.h
 	$(THECC) -c $< -o $@
 
-obj/%.o: src/%.cpp src/include/%.h
-	$(THECC) -c $< -o $@
-
 obj/%.o: src/%.c
 	$(THECC) -c $< -o $@
 
-obj/%.o: src/%.cpp
-	$(THECC) -c $< -o $@
 
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
@@ -71,8 +65,8 @@ $(TARGET): $(OBJS)
 
 # Other stuff that has unusual dependencies
 
-obj/gui.o: src/gui.cpp src/include/gui.h
-obj/cdintf.o: src/cdintf.cpp src/cdintf_linux.cpp src/include/cdintf.h
+obj/gui.o: src/gui.c src/include/gui.h
+obj/cdintf.o: src/cdintf.c src/cdintf_linux.c src/include/cdintf.h
 
 #
 # Musashi specific stuffola
