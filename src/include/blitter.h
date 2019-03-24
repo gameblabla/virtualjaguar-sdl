@@ -7,7 +7,7 @@ void blitter_init(void);
 void blitter_reset(void);
 void blitter_done(void);
 
-uint8 BlitterReadByte(uint32_t, uint32_t who);
+uint8_t BlitterReadByte(uint32_t, uint32_t who);
 uint16_t BlitterReadWord(uint32_t, uint32_t who);
 uint32_t BlitterReadLong(uint32_t, uint32_t who);
 void BlitterWriteByte(uint32_t, uint8_t, uint32_t who);
@@ -17,7 +17,7 @@ void BlitterWriteLong(uint32_t, uint32_t, uint32_t who);
 uint32_t blitter_reg_read(uint32_t offset);
 void blitter_reg_write(uint32_t offset, uint32_t data);
 
-extern uint8 blitter_working;
+extern uint8_t blitter_working;
 
 //For testing only...
 void LogBlit(void);

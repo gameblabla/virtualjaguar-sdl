@@ -79,7 +79,7 @@ uint32_t cdbios_init_done = 0;
 void cdbios_build_sector_lut(void)
 {
 	uint32_t last_sector=0;
-	int32 offset=0;
+	int32_t offset=0;
 	uint32_t sector=0;
 
 	s_cdi_track *last_track=&cdi_descriptor->sessions[cdi_descriptor->nb_of_sessions-1].tracks[cdi_descriptor->sessions[cdi_descriptor->nb_of_sessions-1].nb_of_tracks-1];
@@ -87,8 +87,8 @@ void cdbios_build_sector_lut(void)
 	last_sector=last_track->start_lba+last_track->total_length-1;
 
 
-	cdbios_sector_lut=(uint32*)malloc((last_sector+1)*sizeof(uint32));
-	memset(cdbios_sector_lut,0xff,(last_sector+1)*sizeof(uint32));
+	cdbios_sector_lut=(uint32*)malloc((last_sector+1)*sizeof(uint32_t));
+	memset(cdbios_sector_lut,0xff,(last_sector+1)*sizeof(uint32_t));
 
 	for (int session=0;session<cdi_descriptor->nb_of_sessions;session++)
 	{
@@ -96,7 +96,7 @@ void cdbios_build_sector_lut(void)
 		{
 			s_cdi_track *current_track=&cdi_descriptor->sessions[session].tracks[track];
 
-			if (offset<((int32)(current_track->start_lba-1)))
+			if (offset<((int32_t)(current_track->start_lba-1)))
 			{
 				fprintf(log_get(),"cdbios: postgap between %i and %i\n",offset,current_track->start_lba-1);
 
@@ -256,7 +256,7 @@ void cd_bios_boot(char *filename)
 	cdi_dump_descriptor(log_get(),cdi_descriptor);
 	cdbios_build_sector_lut();
 
-	uint8 *code=cdi_extract_boot_code(cdi_fp,cdi_descriptor);
+	uint8_t *code=cdi_extract_boot_code(cdi_fp,cdi_descriptor);
 
 	// copy the code to ram
 	for (uint32_t i=0;i<cdi_code_length;i++)
@@ -366,7 +366,7 @@ void cdbios_cmd_upause(void)
 {
     JaguarWriteWord(ERR_FLAG,CDROM_STATUS_OK);
 }
-void cdi_read_block(uint32_t sector, uint8 *buffer, uint32_t count)
+void cdi_read_block(uint32_t sector, uint8_t *buffer, uint32_t count)
 {
 	while (count)
 	{
@@ -379,7 +379,7 @@ void cdi_read_block(uint32_t sector, uint8 *buffer, uint32_t count)
 
 void cdbios_cmd_read(void)
 {
-	static uint8 cdbios_sector[2352];
+	static uint8_t cdbios_sector[2352];
 
 /*	cdrom_destination_buffer_beginning=s68000context.areg[0];
 	cdrom_destination_buffer_end=s68000context.areg[1];
@@ -421,7 +421,7 @@ void cdbios_cmd_read(void)
 				cdrom_partition_marker
 				);
 		}
-		if (((int32)cdrom_circular_buffer_size)==-1)
+		if (((int32_t)cdrom_circular_buffer_size)==-1)
 			cdrom_circular_buffer_size=0xffffffff;
 
 		uint32_t track_offset=((ss+(60*mm))*75)+ff;
@@ -437,7 +437,7 @@ void cdbios_cmd_read(void)
 //			if (cdrom_destination_buffer_beginning==0x00046000)
 //				return;
 
-			uint8 *buffer=(uint8*)malloc((nb_sectors+1)*2352);
+			uint8_t *buffer=(uint8_t*)malloc((nb_sectors+1)*2352);
 			cdi_read_block(track_offset,buffer,nb_sectors+1);
 			for (uint32_t k=0;k<nb_bytes_to_read;k++)
 				JaguarWriteByte(cdrom_destination_buffer_beginning+k,buffer[k]);
@@ -446,7 +446,7 @@ void cdbios_cmd_read(void)
 		else
 		if (cdbios_init_type==CDBIOS_INITM)
 		{
-			uint8 *buffer=(uint8*)malloc((31+nb_sectors+1)*2352);
+			uint8_t *buffer=(uint8_t*)malloc((31+nb_sectors+1)*2352);
 			cdi_read_block(track_offset,buffer,nb_sectors+1);
 			
 			uint32	count=(31+nb_sectors+1)*2352;

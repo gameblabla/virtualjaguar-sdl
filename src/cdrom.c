@@ -118,7 +118,7 @@ $185 - Returns 16-bit value
 
 // Private function prototypes
 
-static void CDROMBusWrite(uint16);
+static void CDROMBusWrite(uint16_t);
 static uint16_t CDROMBusRead(void);
 
 #define BUTCH		0x00				// base of Butch=interrupt control register, R/W
@@ -138,11 +138,11 @@ char * BReg[12] = { "BUTCH", "DSCNTRL", "DS_DATA", "???", "I2CNTRL", "SBCNTRL", 
 extern char * whoName[9];
 
 
-static uint8 cdRam[0x100];
+static uint8_t cdRam[0x100];
 static uint16_t cdCmd = 0, cdPtr = 0;
 static uint8_t haveCDGoodness;
 static uint32_t min, sec, frm, block;
-static uint8 cdBuf[2352 + 96];
+static uint8_t cdBuf[2352 + 96];
 static uint32_t cdBufPtr = 2352;
 //Also need to set up (save/restore) the CD's NVRAM
 
@@ -153,7 +153,7 @@ void CDROMInit(void)
 	haveCDGoodness = CDIntfInit();
 
 //GetRawTOC();
-/*uint8 buf[2448];
+/*uint8_t buf[2448];
 uint32_t sec = 18667 - 150;
 memset(buf, 0, 2448);
 if (!CDIntfReadBlock(sec, buf))
@@ -187,7 +187,7 @@ for(int i=0; i<6; i++)
 WriteLog("\nP subchannel data: ");
 for(int i=0; i<96; i+=8)
 {
-	uint8 b = 0;
+	uint8_t b = 0;
 	for(int j=0; j<8; j++)
 		b |= ((buf[2352 + i + j] & 0x80) >> 7) << (7 - j);
 
@@ -196,7 +196,7 @@ for(int i=0; i<96; i+=8)
 WriteLog("\nQ subchannel data: ");
 for(int i=0; i<96; i+=8)
 {
-	uint8 b = 0;
+	uint8_t b = 0;
 	for(int j=0; j<8; j++)
 		b |= ((buf[2352 + i + j] & 0x40) >> 6) << (7 - j);
 
@@ -226,7 +226,7 @@ void CDROMDone(void)
 void BUTCHExec(uint32_t cycles)
 {
 return;
-	extern uint8 * jerry_ram_8;					// Hmm.
+	extern uint8_t * jerry_ram_8;					// Hmm.
 
 	// For now, we just do the FIFO interrupt. Timing is also likely to be WRONG as well.
 	uint32_t cdState = GET32(cdRam, BUTCH);
@@ -250,7 +250,7 @@ return;
 // CD-ROM memory access functions
 //
 
-uint8 CDROMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
+uint8_t CDROMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 #ifdef CDROM_LOG
@@ -261,10 +261,10 @@ uint8 CDROMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 	return cdRam[offset & 0xFF];
 }
 
-static uint8 trackNum = 1, minTrack, maxTrack;
-//static uint8 minutes[16] = {  0,  0,  2,  5,  7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35 };
-//static uint8 seconds[16] = {  0,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0 };
-//static uint8 frames[16]  = {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 };
+static uint8_t trackNum = 1, minTrack, maxTrack;
+//static uint8_t minutes[16] = {  0,  0,  2,  5,  7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35 };
+//static uint8_t seconds[16] = {  0,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0 };
+//static uint8_t frames[16]  = {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 };
 //static uint16_t sd = 0;
 uint16_t CDROMReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
@@ -535,7 +535,7 @@ if (offset == 0x2E)
 	return data;
 }
 
-void CDROMWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
+void CDROMWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 	offset &= 0xFF;
@@ -748,7 +748,7 @@ static uint16_t CDROMBusRead(void)
 // This simulates a read from BUTCH over the SSI to JERRY. Uses real reading!
 //
 //temp, until I can fix my CD image... Argh!
-static uint8 cdBuf2[2532 + 96], cdBuf3[2532 + 96];
+static uint8_t cdBuf2[2532 + 96], cdBuf3[2532 + 96];
 uint16_t GetWordFromButchSSI(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
 	uint8_t go = ((offset & 0x0F) == 0x0A || (offset & 0x0F) == 0x0E ? true : false);

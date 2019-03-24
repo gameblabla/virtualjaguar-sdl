@@ -22,7 +22,7 @@ void clock_done(void)
 {
 }
 
-void clock_byte_write(uint32_t offset, uint8 data)
+void clock_byte_write(uint32_t offset, uint8_t data)
 {
 }
 
@@ -30,7 +30,7 @@ void clock_word_write(uint32_t offset, uint16_t data)
 {
 }
 
-uint8 clock_byte_read(uint32_t offset)
+uint8_t clock_byte_read(uint32_t offset)
 {
 	return 0xFF;
 }

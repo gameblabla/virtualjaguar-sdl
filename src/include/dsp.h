@@ -17,18 +17,18 @@ void DSPDone(void);
 void DSPUpdateRegisterBanks(void);
 void DSPHandleIRQs(void);
 void DSPSetIRQLine(int irqline, int state);
-uint8 DSPReadByte(uint32_t offset, uint32_t who);
+uint8_t DSPReadByte(uint32_t offset, uint32_t who);
 uint16_t DSPReadWord(uint32_t offset, uint32_t who);
 uint32_t DSPReadLong(uint32_t offset, uint32_t who);
-void DSPWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void DSPWriteByte(uint32_t offset, uint8_t data, uint32_t who);
 void DSPWriteWord(uint32_t offset, uint16_t data, uint32_t who);
 void DSPWriteLong(uint32_t offset, uint32_t data, uint32_t who);
 void dsp_releaseTimeslice(void);
 
-void DSPExecP(int32 cycles);
-void DSPExecP2(int32 cycles);
-//void DSPExecP3(int32 cycles);
-void DSPExecComp(int32 cycles);
+void DSPExecP(int32_t cycles);
+void DSPExecP2(int32_t cycles);
+//void DSPExecP3(int32_t cycles);
+void DSPExecComp(int32_t cycles);
 
 // DSP interrupt numbers (in $F1A100, bits 4-8 & 16)
 

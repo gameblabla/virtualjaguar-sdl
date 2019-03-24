@@ -150,21 +150,21 @@
 
 //#define JERRY_DEBUG
 
-static uint8 * jerry_ram_8;
+static uint8_t * jerry_ram_8;
 
 //#define JERRY_CONFIG	0x4002						// ??? What's this ???
 
-uint8 analog_x, analog_y;
+uint8_t analog_x, analog_y;
 
 static uint32_t jerry_timer_1_prescaler;
 static uint32_t jerry_timer_2_prescaler;
 static uint32_t jerry_timer_1_divider;
 static uint32_t jerry_timer_2_divider;
-static int32 jerry_timer_1_counter;
-static int32 jerry_timer_2_counter;
+static int32_t jerry_timer_1_counter;
+static int32_t jerry_timer_2_counter;
 
 static uint32_t jerry_i2s_interrupt_divide = 8;
-static int32 jerry_i2s_interrupt_timer = -1;
+static int32_t jerry_i2s_interrupt_timer = -1;
 uint32_t jerryI2SCycles;
 uint32_t jerryIntPending;
 
@@ -349,7 +349,7 @@ void JERRYSetPendingIRQ(int irq)
 //
 // JERRY byte access (read)
 //
-uint8 JERRYReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
+uint8_t JERRYReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 #ifdef JERRY_DEBUG
@@ -493,16 +493,16 @@ uint16_t JERRYReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 		return eeprom_word_read(offset);
 
 /*if (offset >= 0xF1D000)
-	//WriteLog("JERRY: Reading word at %08X [%04X]...\n", offset, ((uint16)jerry_ram_8[(offset+0)&0xFFFF] << 8) | jerry_ram_8[(offset+1)&0xFFFF]);//*/
+	//WriteLog("JERRY: Reading word at %08X [%04X]...\n", offset, ((uint16_t)jerry_ram_8[(offset+0)&0xFFFF] << 8) | jerry_ram_8[(offset+1)&0xFFFF]);//*/
 
 	offset &= 0xFFFF;				// Prevent crashing...!
-	return ((uint16)jerry_ram_8[offset+0] << 8) | jerry_ram_8[offset+1];
+	return ((uint16_t)jerry_ram_8[offset+0] << 8) | jerry_ram_8[offset+1];
 }
 
 //
 // JERRY byte access (write)
 //
-void JERRYWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
+void JERRYWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 #ifdef JERRY_DEBUG
@@ -525,9 +525,9 @@ void JERRYWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 	{
 //		//WriteLog("JERRY: Writing %02X to SCLK...\n", data);
 		if ((offset & 0x03) == 2)
-			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0x00FF) | ((uint32)data << 8);
+			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0x00FF) | ((uint32_t)data << 8);
 		else
-			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0xFF00) | (uint32)data;
+			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0xFF00) | (uint32_t)data;
 
 		jerry_i2s_interrupt_timer = -1;
 		jerry_i2s_exec(0);
@@ -603,9 +603,9 @@ void JERRYWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 	{
 //		//WriteLog("JERRY: Writing %02X to SCLK...\n", data);
 		if ((offset & 0x03) == 2)
-			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0x00FF) | ((uint32)data << 8);
+			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0x00FF) | ((uint32_t)data << 8);
 		else
-			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0xFF00) | (uint32)data;
+			jerry_i2s_interrupt_divide = (jerry_i2s_interrupt_divide & 0xFF00) | (uint32_t)data;
 
 		jerry_i2s_interrupt_timer = -1;
 		jerry_i2s_exec(0);
@@ -709,7 +709,7 @@ void JERRYWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 	}
 	else if (offset == 0xF1A152)					// Bottom half of SCLK ($F1A150)
 	{
-		jerry_i2s_interrupt_divide = (uint8)data;
+		jerry_i2s_interrupt_divide = (uint8_t)data;
 		jerry_i2s_interrupt_timer = -1;
 		jerry_i2s_exec(0);
 
@@ -770,7 +770,7 @@ void JERRYWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 #else
 	if (offset == 0xF1A152)					// Bottom half of SCLK ($F1A150)
 	{
-		jerry_i2s_interrupt_divide = (uint8)data;
+		jerry_i2s_interrupt_divide = (uint8_t)data;
 		jerry_i2s_interrupt_timer = -1;
 		jerry_i2s_exec(0);
 

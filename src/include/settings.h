@@ -17,7 +17,7 @@
 struct VJSettings
 {
 	uint8_t useJoystick;
-	int32 joyport;									// Joystick port
+	int32_t joyport;									// Joystick port
 	uint8_t hardwareTypeNTSC;							// Set to false for PAL
 	uint8_t useJaguarBIOS;
 	uint8_t DSPEnabled;

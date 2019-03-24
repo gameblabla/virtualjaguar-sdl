@@ -49,14 +49,14 @@ uint32_t jaguar_active_memory_dumps = 0;
 
 uint32_t jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
 
-/*static*/ uint8 * jaguar_mainRam = NULL;
-/*static*/ uint8 * jaguar_mainRom = NULL;
-/*static*/ uint8 * jaguar_bootRom = NULL;
-/*static*/ uint8 * jaguar_CDBootROM = NULL;
+/*static*/ uint8_t * jaguar_mainRam = NULL;
+/*static*/ uint8_t * jaguar_mainRom = NULL;
+/*static*/ uint8_t * jaguar_bootRom = NULL;
+/*static*/ uint8_t * jaguar_CDBootROM = NULL;
 
 #ifdef CPU_DEBUG_MEMORY
-uint8 writeMemMax[0x400000], writeMemMin[0x400000];
-uint8 readMem[0x400000];
+uint8_t writeMemMax[0x400000], writeMemMin[0x400000];
+uint8_t readMem[0x400000];
 uint32_t returnAddr[4000], raPtr = 0xFFFFFFFF;
 #endif
 
@@ -277,7 +277,7 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
 	{
 		if (startMemLog)
 		{
-			uint8 hi = value >> 8, lo = value & 0xFF;
+			uint8_t hi = value >> 8, lo = value & 0xFF;
 
 			if (hi > writeMemMax[address])
 				writeMemMax[address] = hi;
@@ -460,9 +460,9 @@ unsigned jaguar_unknown_readword(unsigned address, uint32_t who/*=UNKNOWN*/)
     return 0xFFFF;
 }
 
-uint8 JaguarReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
+uint8_t JaguarReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
-	uint8 data = 0x00;
+	uint8_t data = 0x00;
 	who = UNKNOWN;
 
 	offset &= 0xFFFFFF;
@@ -514,7 +514,7 @@ uint16_t JaguarReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 	return jaguar_unknown_readword(offset, who);
 }
 
-void JaguarWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
+void JaguarWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 {
 //Need to check for writes in the range of $18FA70 + 8000...
 /*if (effect_start)
@@ -784,7 +784,7 @@ void jaguar_done(void)
 //
 // Main Jaguar execution loop (1 frame)
 //
-void JaguarExecute(int16 * backbuffer, uint8_t render)
+void JaguarExecute(int16_t * backbuffer, uint8_t render)
 {
 	uint16_t vp = TOMReadWord(0xF0003E,UNKNOWN) + 1;//Hmm. This is a WO register. Will work? Looks like. But wrong behavior!
 	uint16_t vi = TOMReadWord(0xF0004E,UNKNOWN);//Another WO register...
@@ -822,7 +822,7 @@ if (effect_start)
 //Not sure if this is correct...
 //Seems to be, kinda. According to the JTRM, this should only fire on odd lines in non-interlace mode...
 //Which means that it normally wouldn't go when it's zero.
-		if (i == vi && i > 0 && tom_irq_enabled(IRQ_VBLANKz))	// Time for Vertical Interrupt?
+		if (i == vi && i > 0 && tom_irq_enabled(IRQ_VBLANK))	// Time for Vertical Interrupt?
 		{
 			// We don't have to worry about autovectors & whatnot because the Jaguar
 			// tells you through its HW registers who sent the interrupt...
@@ -872,7 +872,7 @@ void DumpMainMemory(void)
 {
 }
 
-uint8 * GetRamPtr(void)
+uint8_t * GetRamPtr(void)
 {
 	return jaguar_mainRam;
 }

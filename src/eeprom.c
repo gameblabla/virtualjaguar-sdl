@@ -60,7 +60,7 @@ void eeprom_init(void)
 void eeprom_reset(void)
 {
 	if (!foundEEPROM)
-		memset(eeprom_ram, 0xFF, 64 * sizeof(uint16));
+		memset(eeprom_ram, 0xFF, 64 * sizeof(uint16_t));
 }
 
 void eeprom_done(void)
@@ -81,7 +81,7 @@ void EEPROMSave(void)
 	fclose(jerry_ee_fp);
 }
 
-uint8 eeprom_byte_read(uint32_t offset)
+uint8_t eeprom_byte_read(uint32_t offset)
 {
 	switch (offset)
 	{
@@ -100,10 +100,10 @@ uint8 eeprom_byte_read(uint32_t offset)
 
 uint16_t eeprom_word_read(uint32_t offset)
 {
-	return ((uint16)eeprom_byte_read(offset+0) << 8) | eeprom_byte_read(offset+1);
+	return ((uint16_t)eeprom_byte_read(offset+0) << 8) | eeprom_byte_read(offset+1);
 }
 
-void eeprom_byte_write(uint32_t offset, uint8 data)
+void eeprom_byte_write(uint32_t offset, uint8_t data)
 {
 	switch (offset)
 	{

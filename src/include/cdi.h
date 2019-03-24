@@ -13,15 +13,15 @@
 
 struct s_cdi_track
 {
-	uint8	filename_length;
-	uint32	pregap_length;
+	uint8_t	filename_length;
+	uint32_t	pregap_length;
 	uint32_t  length;
-	uint32	mode;
-	uint32	start_lba;
+	uint32_t	mode;
+	uint32_t	start_lba;
 	uint32_t  total_length;
-	uint32	sector_size;
-	uint32	sector_size_value;
-	uint32	position;
+	uint32_t	sector_size;
+	uint32_t	sector_size_value;
+	uint32_t	position;
 };
 
 struct s_cdi_session
@@ -54,7 +54,7 @@ int cdi_open(char * path);
 void cdi_close(int fp);
 struct s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp);
 void cdi_dump_descriptor(FILE * fp,struct s_cdi_descriptor * cdi_descriptor);
-uint8 * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor);
-void cdi_load_sector(uint32_t sector, uint8 * buffer);
+uint8_t * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor);
+void cdi_load_sector(uint32_t sector, uint8_t * buffer);
 
 #endif	// __CDI_H__

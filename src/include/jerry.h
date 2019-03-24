@@ -11,9 +11,9 @@ void jerry_init(void);
 void jerry_reset(void);
 void jerry_done(void);
 
-uint8 JERRYReadByte(uint32_t offset, uint32_t who);
+uint8_t JERRYReadByte(uint32_t offset, uint32_t who);
 uint16_t JERRYReadWord(uint32_t offset, uint32_t who);
-void JERRYWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void JERRYWriteByte(uint32_t offset, uint8_t data, uint32_t who);
 void JERRYWriteWord(uint32_t offset, uint16_t data, uint32_t who);
 
 void JERRYExecPIT(uint32_t cycles);

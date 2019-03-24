@@ -14,8 +14,8 @@
 //shouldn't these exist here??? Prolly.
 //And now, they do! :-)
 SDL_Surface * surface, * mainSurface;
-Uint32 mainSurfaceFlags;
-int16 * backbuffer;
+uint32_t mainSurfaceFlags;
+int16_t * backbuffer;
 SDL_Joystick * joystick;
 
 // One of the reasons why OpenGL is slower then normal SDL rendering, is because
@@ -96,12 +96,12 @@ uint8_t InitVideo(void)
 
 	// Set up the backbuffer
 //To be safe, this should be 1280 * 625 * 2...
-	backbuffer = (int16 *)malloc(320 * 240 * sizeof(int16));
-// backbuffer = (int16 *)malloc(1280 * 625 * sizeof(int16));
-//	memset(backbuffer, 0x44, VIRTUAL_SCREEN_WIDTH * VIRTUAL_SCREEN_HEIGHT_NTSC * sizeof(int16));
+	backbuffer = (int16_t *)malloc(320 * 240 * sizeof(int16_t));
+// backbuffer = (int16_t *)malloc(1280 * 625 * sizeof(int16_t));
+//	memset(backbuffer, 0x44, VIRTUAL_SCREEN_WIDTH * VIRTUAL_SCREEN_HEIGHT_NTSC * sizeof(int16_t));
 	memset(backbuffer, 0x44, VIRTUAL_SCREEN_WIDTH *
 		(vjs.hardwareTypeNTSC ? VIRTUAL_SCREEN_HEIGHT_NTSC : VIRTUAL_SCREEN_HEIGHT_PAL)
-		* sizeof(int16));
+		* sizeof(int16_t));
 
 	return true;
 }

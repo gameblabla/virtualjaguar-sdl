@@ -23,7 +23,7 @@
 
 // Exports from JAGUAR.CPP
 
-extern int32 jaguar_cpu_in_exec;
+extern int32_t jaguar_cpu_in_exec;
 extern uint32_t jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
 extern char * jaguar_eeproms_path;
 extern char * whoName[9];
@@ -32,17 +32,17 @@ void jaguar_init(void);
 void jaguar_reset(void);
 void jaguar_done(void);
 
-uint8 JaguarReadByte(uint32_t offset, uint32_t who);
+uint8_t JaguarReadByte(uint32_t offset, uint32_t who);
 uint16_t JaguarReadWord(uint32_t offset, uint32_t who);
 uint32_t JaguarReadLong(uint32_t offset, uint32_t who);
-void JaguarWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void JaguarWriteByte(uint32_t offset, uint8_t data, uint32_t who);
 void JaguarWriteWord(uint32_t offset, uint16_t data, uint32_t who);
 void JaguarWriteLong(uint32_t offset, uint32_t data, uint32_t who);
 
 uint32_t jaguar_interrupt_handler_is_valid(uint32_t i);
 void jaguar_dasm(uint32_t offset, uint32_t qt);
 
-void JaguarExecute(int16 * backbuffer, uint8_t render);
+void JaguarExecute(int16_t * backbuffer, uint8_t render);
 
 // Some handy macros to help converting native endian to big endian (jaguar native)
 // & vice versa
@@ -68,6 +68,6 @@ void JaguarExecute(int16 * backbuffer, uint8_t render);
 //Temp debug stuff (will go away soon, so don't depend on these)
 
 void DumpMainMemory(void);
-uint8 * GetRamPtr(void);
+uint8_t * GetRamPtr(void);
 
 #endif	// __JAGUAR_H__

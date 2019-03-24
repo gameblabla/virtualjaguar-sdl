@@ -35,46 +35,46 @@ void BlitterMidsummer(uint32_t cmd);
 void BlitterMidsummer2(void);
 
 
-#define REG(A)	(((uint32)blitter_ram[(A)] << 24) | ((uint32)blitter_ram[(A)+1] << 16) \
-				| ((uint32)blitter_ram[(A)+2] << 8) | (uint32)blitter_ram[(A)+3])
+#define REG(A)	(((uint32_t)blitter_ram[(A)] << 24) | ((uint32_t)blitter_ram[(A)+1] << 16) \
+				| ((uint32_t)blitter_ram[(A)+2] << 8) | (uint32_t)blitter_ram[(A)+3])
 #define WREG(A,D)	(blitter_ram[(A)] = ((D)>>24)&0xFF, blitter_ram[(A)+1] = ((D)>>16)&0xFF, \
 					blitter_ram[(A)+2] = ((D)>>8)&0xFF, blitter_ram[(A)+3] = (D)&0xFF)
 
 // Blitter registers (offsets from F02200)
 
-#define A1_BASE			((UINT32)0x00)
-#define A1_FLAGS		((UINT32)0x04)
-#define A1_CLIP			((UINT32)0x08)	// Height and width values for clipping
-#define A1_PIXEL		((UINT32)0x0C)	// Integer part of the pixel (Y.i and X.i)
-#define A1_STEP			((UINT32)0x10)	// Integer part of the step
-#define A1_FSTEP		((UINT32)0x14)	// Fractionnal part of the step
-#define A1_FPIXEL		((UINT32)0x18)	// Fractionnal part of the pixel (Y.f and X.f)
-#define A1_INC			((UINT32)0x1C)	// Integer part of the increment
-#define A1_FINC			((UINT32)0x20)	// Fractional part of the increment
-#define A2_BASE			((UINT32)0x24)
-#define A2_FLAGS		((UINT32)0x28)
-#define A2_MASK			((UINT32)0x2C)	// Modulo values for x and y (M.y  and M.x)
-#define A2_PIXEL		((UINT32)0x30)	// Integer part of the pixel (no fractional part for A2)
-#define A2_STEP			((UINT32)0x34)	// Integer part of the step (no fractional part for A2)
-#define COMMAND			((UINT32)0x38)
-#define PIXLINECOUNTER	((UINT32)0x3C)
-#define SRCDATA			((UINT32)0x40)
-#define DSTDATA			((UINT32)0x48)
-#define DSTZ			((UINT32)0x50)
-#define SRCZINT			((UINT32)0x58)
-#define SRCZFRAC		((UINT32)0x60)
-#define PATTERNDATA		((UINT32)0x68)
-#define INTENSITYINC	((UINT32)0x70)
-#define ZINC			((UINT32)0x74)
-#define COLLISIONCTRL	((UINT32)0x78)
-#define PHRASEINT0		((UINT32)0x7C)
-#define PHRASEINT1		((UINT32)0x80)
-#define PHRASEINT2		((UINT32)0x84)
-#define PHRASEINT3		((UINT32)0x88)
-#define PHRASEZ0		((UINT32)0x8C)
-#define PHRASEZ1		((UINT32)0x90)
-#define PHRASEZ2		((UINT32)0x94)
-#define PHRASEZ3		((UINT32)0x98)
+#define A1_BASE			((uint32_t)0x00)
+#define A1_FLAGS		((uint32_t)0x04)
+#define A1_CLIP			((uint32_t)0x08)	// Height and width values for clipping
+#define A1_PIXEL		((uint32_t)0x0C)	// Integer part of the pixel (Y.i and X.i)
+#define A1_STEP			((uint32_t)0x10)	// Integer part of the step
+#define A1_FSTEP		((uint32_t)0x14)	// Fractionnal part of the step
+#define A1_FPIXEL		((uint32_t)0x18)	// Fractionnal part of the pixel (Y.f and X.f)
+#define A1_INC			((uint32_t)0x1C)	// Integer part of the increment
+#define A1_FINC			((uint32_t)0x20)	// Fractional part of the increment
+#define A2_BASE			((uint32_t)0x24)
+#define A2_FLAGS		((uint32_t)0x28)
+#define A2_MASK			((uint32_t)0x2C)	// Modulo values for x and y (M.y  and M.x)
+#define A2_PIXEL		((uint32_t)0x30)	// Integer part of the pixel (no fractional part for A2)
+#define A2_STEP			((uint32_t)0x34)	// Integer part of the step (no fractional part for A2)
+#define COMMAND			((uint32_t)0x38)
+#define PIXLINECOUNTER	((uint32_t)0x3C)
+#define SRCDATA			((uint32_t)0x40)
+#define DSTDATA			((uint32_t)0x48)
+#define DSTZ			((uint32_t)0x50)
+#define SRCZINT			((uint32_t)0x58)
+#define SRCZFRAC		((uint32_t)0x60)
+#define PATTERNDATA		((uint32_t)0x68)
+#define INTENSITYINC	((uint32_t)0x70)
+#define ZINC			((uint32_t)0x74)
+#define COLLISIONCTRL	((uint32_t)0x78)
+#define PHRASEINT0		((uint32_t)0x7C)
+#define PHRASEINT1		((uint32_t)0x80)
+#define PHRASEINT2		((uint32_t)0x84)
+#define PHRASEINT3		((uint32_t)0x88)
+#define PHRASEZ0		((uint32_t)0x8C)
+#define PHRASEZ1		((uint32_t)0x90)
+#define PHRASEZ2		((uint32_t)0x94)
+#define PHRASEZ3		((uint32_t)0x98)
 
 // Blitter command bits
 
@@ -1481,7 +1481,7 @@ void blitter_done(void)
 {
 }
 
-uint8 BlitterReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
+uint8_t BlitterReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 	offset &= 0xFF;
@@ -1505,7 +1505,7 @@ uint8 BlitterReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 uint16_t BlitterReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
-	return ((uint16)BlitterReadByte(offset, who) << 8) | (uint16)BlitterReadByte(offset+1, who);
+	return ((uint16_t)BlitterReadByte(offset, who) << 8) | (uint16_t)BlitterReadByte(offset+1, who);
 }
 
 //Crappy!
@@ -1515,7 +1515,7 @@ uint32_t BlitterReadLong(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 	return (BlitterReadWord(offset, who) << 16) | BlitterReadWord(offset+2, who);
 }
 
-void BlitterWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
+void BlitterWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
 /*if (offset & 0xFF == 0x7B)

@@ -38,7 +38,7 @@ SDL_AudioSpec desired;
 // endian when looking at the sample buffer, i.e., no need to worry about it.
 
 uint16_t * DACBuffer;
-uint8 SCLKFrequencyDivider = 19;						// Default is roughly 22 KHz (20774 Hz in NTSC mode)
+uint8_t SCLKFrequencyDivider = 19;						// Default is roughly 22 KHz (20774 Hz in NTSC mode)
 uint16_t serialMode = 0;
 
 // Private function prototypes
@@ -51,7 +51,7 @@ int GetCalculatedFrequency(void);
 //
 void DACInit(void)
 {
-	memory_malloc_secure((void **)&DACBuffer, BUFFER_SIZE * sizeof(uint16), "DAC buffer");
+	memory_malloc_secure((void **)&DACBuffer, BUFFER_SIZE * sizeof(uint16_t), "DAC buffer");
 
 	desired.freq = GetCalculatedFrequency();		// SDL will do conversion on the fly, if it can't get the exact rate. Nice!
 	desired.format = AUDIO_S16SYS;					// This uses the native endian (for portability)...
@@ -158,12 +158,12 @@ int GetCalculatedFrequency(void)
 //
 // LTXD/RTXD/SCLK/SMODE ($F1A148/4C/50/54)
 //
-void DACWriteByte(uint32_t offset, uint8 data, uint32_t who/*= UNKNOWN*/)
+void DACWriteByte(uint32_t offset, uint8_t data, uint32_t who/*= UNKNOWN*/)
 {
 	who = UNKNOWN;
 	//WriteLog("DAC: %s writing BYTE %02X at %08X\n", whoName[who], data, offset);
 	if (offset == SCLK + 3)
-		DACWriteWord(offset - 3, (uint16)data, UNKNOWN);
+		DACWriteWord(offset - 3, (uint16_t)data, UNKNOWN);
 }
 
 void DACWriteWord(uint32_t offset, uint16_t data, uint32_t who/*= UNKNOWN*/)
@@ -216,9 +216,9 @@ if (spin == 0x10000000)
 	else if (offset == SCLK + 2)					// Sample rate
 	{
 		//WriteLog("DAC: Writing %u to SCLK...\n", data);
-		if ((uint8)data != SCLKFrequencyDivider)
+		if ((uint8_t)data != SCLKFrequencyDivider)
 		{
-			SCLKFrequencyDivider = (uint8)data;
+			SCLKFrequencyDivider = (uint8_t)data;
 //Of course a better way would be to query the hardware to find the upper limit...
 			if (data > 7)	// Anything less than 8 is too high!
 			{
@@ -250,7 +250,7 @@ if (spin == 0x10000000)
 //
 // LRXD/RRXD/SSTAT ($F1A148/4C/50)
 //
-uint8 DACReadByte(uint32_t offset, uint32_t who/*= UNKNOWN*/)
+uint8_t DACReadByte(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
 	who = UNKNOWN;
 //	//WriteLog("DAC: %s reading byte from %08X\n", whoName[who], offset);

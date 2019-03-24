@@ -24,10 +24,10 @@
 
 // External variables
 
-extern uint8 * jaguar_mainRam;
-extern uint8 * jaguar_mainRom;
-extern uint8 * jaguar_bootRom;
-extern uint8 * jaguar_CDBootROM;
+extern uint8_t * jaguar_mainRam;
+extern uint8_t * jaguar_mainRom;
+extern uint8_t * jaguar_bootRom;
+extern uint8_t * jaguar_CDBootROM;
 
 // Global variables (export capable)
 //should these even be here anymore?
@@ -45,8 +45,8 @@ uint32_t totalFrames;
 
 int main(int argc, char * argv[])
 {
-//	int32 nNormalFrac = 0; 
-	int32 nFrameskip = 0;							// Default: Show every frame
+//	int32_t nNormalFrac = 0; 
+	int32_t nFrameskip = 0;							// Default: Show every frame
 
 	printf("Virtual Jaguar GCC/SDL Portable Jaguar Emulator v1.0.7\n");
 	printf("Based upon Virtual Jaguar core v1.0.0 by David Raingeard.\n");

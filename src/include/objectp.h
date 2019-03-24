@@ -17,7 +17,7 @@ void op_set_status_register(uint32_t data);
 uint32_t op_get_status_register(void);
 void op_set_current_object(uint64_t object);
 
-uint8 OPReadByte(uint32_t, uint32_t who);
+uint8_t OPReadByte(uint32_t, uint32_t who);
 uint16_t OPReadWord(uint32_t, uint32_t who);
 void OPWriteByte(uint32_t, uint8_t, uint32_t who);
 void OPWriteWord(uint32_t, uint16_t, uint32_t who);

@@ -6,10 +6,10 @@
 void joystick_init(void);
 void joystick_reset(void);
 void joystick_done(void);
-void joystick_byte_write(uint32_t, uint8);
-void joystick_word_write(uint32_t, uint16);
-uint8 joystick_byte_read(uint32);
-uint16_t joystick_word_read(uint32);
+void joystick_byte_write(uint32_t, uint8_t);
+void joystick_word_write(uint32_t, uint16_t);
+uint8_t joystick_byte_read(uint32_t);
+uint16_t joystick_word_read(uint32_t);
 void joystick_exec(void);
 
 #endif

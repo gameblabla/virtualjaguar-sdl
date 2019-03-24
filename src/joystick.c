@@ -37,8 +37,8 @@
 
 // Global vars
 
-static uint8 joystick_ram[4];
-static uint8 joypad_0_buttons[21];
+static uint8_t joystick_ram[4];
+static uint8_t joypad_0_buttons[21];
 extern uint8_t finished;
 extern uint8_t showGUI;
 uint8_t GUIKeyHeld = false;
@@ -58,7 +58,7 @@ void joystick_init(void)
 void joystick_exec(void)
 {
 //	extern uint8_t useJoystick;
-	uint8 * keystate = SDL_GetKeyState(NULL);
+	uint8_t * keystate = SDL_GetKeyState(NULL);
   	
 	memset(joypad_0_buttons, 0, 21);
 	iLeft = iRight = false;
@@ -127,7 +127,7 @@ void joystick_exec(void)
     if (vjs.useJoystick)
     {
 		extern SDL_Joystick * joystick;
-		int16 x = SDL_JoystickGetAxis(joystick, 0),
+		int16_t x = SDL_JoystickGetAxis(joystick, 0),
 			y = SDL_JoystickGetAxis(joystick, 1);
 	
 		if (x > 16384)
@@ -161,14 +161,14 @@ void joystick_done(void)
 {
 }
 
-uint8 joystick_byte_read(uint32_t offset)
+uint8_t joystick_byte_read(uint32_t offset)
 {
 //	extern uint8_t hardwareTypeNTSC;
 	offset &= 0x03;
 
 	if (offset == 0)
 	{
-		uint8 data = 0x00;
+		uint8_t data = 0x00;
 		int pad0Index = joystick_ram[1] & 0x0F;
 		int pad1Index = (joystick_ram[1] >> 4) & 0x0F;
 		
@@ -200,7 +200,7 @@ uint8 joystick_byte_read(uint32_t offset)
 	}
 	else if (offset == 3)
 	{
-		uint8 data = 0x2F | (vjs.hardwareTypeNTSC ? 0x10 : 0x00);
+		uint8_t data = 0x2F | (vjs.hardwareTypeNTSC ? 0x10 : 0x00);
 		int pad0Index = joystick_ram[1] & 0x0F;
 //unused		int pad1Index = (joystick_ram[1] >> 4) & 0x0F;
 		
@@ -234,10 +234,10 @@ uint8 joystick_byte_read(uint32_t offset)
 
 uint16_t joystick_word_read(uint32_t offset)
 {
-	return ((uint16)joystick_byte_read((offset+0)&0x03) << 8) | joystick_byte_read((offset+1)&0x03);
+	return ((uint16_t)joystick_byte_read((offset+0)&0x03) << 8) | joystick_byte_read((offset+1)&0x03);
 }
 
-void joystick_byte_write(uint32_t offset, uint8 data)
+void joystick_byte_write(uint32_t offset, uint8_t data)
 {
 	joystick_ram[offset&0x03] = data;
 }

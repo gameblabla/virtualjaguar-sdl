@@ -80,7 +80,7 @@ void CDIntfDone(void)
     close(device_name);
 }
 
-uint8_t CDIntfReadBlock(uint32_t sector, uint8 * buffer)
+uint8_t CDIntfReadBlock(uint32_t sector, uint8_t * buffer)
 {
 	unsigned int   buflen = CD_FRAMESIZE_RAW;          // Raw read, 2352 bytes per sector
 	//unsigned char *buf    = new unsigned int[buflen];	// DOSBOX, do we need this?
@@ -140,19 +140,19 @@ uint32_t CDIntfGetCurrentDrive(void)
 	return 0;
 }
 
-const uint8 * CDIntfGetDriveName(uint32)
+const uint8_t * CDIntfGetDriveName(uint32_t)
 {
 	//WriteLog("CDINTF: GetDriveName unimplemented!\n");
 	return NULL;
 }
 
-uint8 CDIntfGetSessionInfo(uint32_t session, uint32_t offset)
+uint8_t CDIntfGetSessionInfo(uint32_t session, uint32_t offset)
 {
 	//WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
 	return 0xFF;
 }
 
-uint8 CDIntfGetTrackInfo(uint32_t track, uint32_t offset)
+uint8_t CDIntfGetTrackInfo(uint32_t track, uint32_t offset)
 {
 	//WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
 	return 0xFF;
@@ -178,7 +178,7 @@ void CDIntfDone(void)
 {
 }
 
-uint8_t CDIntfReadBlock(uint32_t sector, uint8 * buffer)
+uint8_t CDIntfReadBlock(uint32_t sector, uint8_t * buffer)
 {
 	//WriteLog("CDINTF: ReadBlock unimplemented!\n");
 	return false;
@@ -201,19 +201,19 @@ uint32_t CDIntfGetCurrentDrive(void)
 	return 0;
 }
 
-const uint8 * CDIntfGetDriveName(uint32)
+const uint8_t * CDIntfGetDriveName(uint32_t)
 {
 	//WriteLog("CDINTF: GetDriveName unimplemented!\n");
 	return NULL;
 }
 
-uint8 CDIntfGetSessionInfo(uint32_t session, uint32_t offset)
+uint8_t CDIntfGetSessionInfo(uint32_t session, uint32_t offset)
 {
 	//WriteLog("CDINTF: GetSessionInfo unimplemented!\n");
 	return 0xFF;
 }
 
-uint8 CDIntfGetTrackInfo(uint32_t track, uint32_t offset)
+uint8_t CDIntfGetTrackInfo(uint32_t track, uint32_t offset)
 {
 	//WriteLog("CDINTF: GetTrackInfo unimplemented!\n");
 	return 0xFF;

@@ -1050,7 +1050,7 @@ const char * condition[32] =
 #endif
 /*	if (CONDITION(jaguar.op & 31))
 	{
-		int32_t r1 = (INT8)((jaguar.op >> 2) & 0xF8) >> 2;
+		int32_t r1 = (int8_t)((jaguar.op >> 2) & 0xF8) >> 2;
 		uint32_t newpc = jaguar.PC + r1;
 		CALL_MAME_DEBUG;
 		jaguar.op = ROPCODE(jaguar.PC);
@@ -1253,7 +1253,7 @@ static void gpu_opcode_cmpq(void)
 	if (doGPUDis)
 		//WriteLog("%06X: CMPQ   #%d, R%02u [NCZ:%u%u%u, R%02u=%08X] -> ", gpu_pc-2, sqtable[IMM_1], IMM_2, gpu_flag_n, gpu_flag_c, gpu_flag_z, IMM_2, RN);
 #endif
-	uint32_t r1 = sqtable[IMM_1 & 0x1F]; // I like this better -> (INT8)(jaguar.op >> 2) >> 3;
+	uint32_t r1 = sqtable[IMM_1 & 0x1F]; // I like this better -> (int8_t)(jaguar.op >> 2) >> 3;
 	uint32_t res = RN - r1;
 	SET_ZNC_SUB(RN, r1, res);
 #ifdef GPU_DIS_CMPQ

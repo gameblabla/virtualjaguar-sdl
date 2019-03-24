@@ -11,8 +11,8 @@
 
 #include "jaguar.h"
 
-static uint8 anajoy_ram[2];
-static uint8 analog_x, analog_y;
+static uint8_t anajoy_ram[2];
+static uint8_t analog_x, analog_y;
 
 
 void anajoy_init(void)
@@ -31,7 +31,7 @@ void anajoy_done(void)
 {
 }
 
-void anajoy_byte_write(uint32_t offset, uint8 data)
+void anajoy_byte_write(uint32_t offset, uint8_t data)
 {
 	anajoy_ram[offset&0x01]=data;
 }
@@ -43,7 +43,7 @@ void anajoy_word_write(uint32_t offset, uint16_t data)
 	anajoy_ram[offset+1]=data&0xff;
 }
 
-uint8 anajoy_byte_read(uint32_t offset)
+uint8_t anajoy_byte_read(uint32_t offset)
 {
 	if (anajoy_ram[1]&0x01)
 		return(analog_y);

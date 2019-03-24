@@ -13,9 +13,9 @@ void CDROMDone(void);
 
 void BUTCHExec(uint32_t cycles);
 
-uint8 CDROMReadByte(uint32_t offset, uint32_t who);
+uint8_t CDROMReadByte(uint32_t offset, uint32_t who);
 uint16_t CDROMReadWord(uint32_t offset, uint32_t who);
-void CDROMWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void CDROMWriteByte(uint32_t offset, uint8_t data, uint32_t who);
 void CDROMWriteWord(uint32_t offset, uint16_t data, uint32_t who);
 
 uint8_t ButchIsReadyToSend(void);

@@ -22,7 +22,7 @@
 #define CDI_V3  0x80000005
 #define CDI_V35 0x80000006
 
-static uint8 cdi_track_start_mark[10] =
+static uint8_t cdi_track_start_mark[10] =
 	{ 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF };
 
 int cdi_fp;
@@ -246,12 +246,12 @@ void cdi_dump_descriptor(FILE * fp, struct s_cdi_descriptor * cdi_descriptor)
 	fprintf(fp, "CDI: %i sessions\n", cdi_descriptor->nb_of_sessions);
 }
 
-uint8 * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor)
+uint8_t * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor)
 {
 	struct s_cdi_track * boot_track = &cdi_descriptor->sessions[1].tracks[0];
 	uint32_t boot_track_size = boot_track->length * boot_track->sector_size;
 
-	uint8 * boot_track_data = (uint8 *)malloc(boot_track_size);
+	uint8_t * boot_track_data = (uint8_t *)malloc(boot_track_size);
 	lseek(fp, 2 + (boot_track->position), SEEK_SET);
 	read(fp, boot_track_data, boot_track_size);
 	
@@ -291,10 +291,10 @@ uint8 * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor)
 		data16[i] = sdata;
 	}*/
 
-	return (uint8 *)data16;
+	return (uint8_t *)data16;
 }
 
-void cdi_load_sector(uint32_t sector, uint8 * buffer)
+void cdi_load_sector(uint32_t sector, uint8_t * buffer)
 {
 	if (sector == 0xFFFFFFFF)
 	{
@@ -311,7 +311,7 @@ void cdi_load_sector(uint32_t sector, uint8 * buffer)
 /*	// byte swap
 	for (uint32_t i=0;i<2352;i+=2)
 	{
-		uint8 sdata=buffer[i+0];
+		uint8_t sdata=buffer[i+0];
 		buffer[i+0]=buffer[i+1];
 		buffer[i+1]=sdata;
 	}*/

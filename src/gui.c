@@ -31,10 +31,10 @@ int gzfilelength(gzFile gd);
 
 // External variables
 
-extern uint8 * jaguar_mainRam;
-extern uint8 * jaguar_mainRom;
-extern uint8 * jaguar_bootRom;
-extern uint8 * jaguar_CDBootROM;
+extern uint8_t * jaguar_mainRam;
+extern uint8_t * jaguar_mainRom;
+extern uint8_t * jaguar_bootRom;
+extern uint8_t * jaguar_CDBootROM;
 extern uint8_t BIOSLoaded;
 extern uint8_t CDBIOSLoaded;
 
@@ -76,7 +76,7 @@ uint8_t GUIMain(char * filename)
 
 void RunEmu(void)
 {
-	extern int16 * backbuffer;
+	extern int16_t * backbuffer;
 	extern uint8_t finished;
 	uint32_t nFrame = 0, nFrameskip = 6;
 	finished = false;
@@ -105,7 +105,7 @@ void RunEmu(void)
 //
 // Generic ROM loading
 //
-uint32_t JaguarLoadROM(uint8 * rom, char * path)
+uint32_t JaguarLoadROM(uint8_t * rom, char * path)
 {
 	// We really should have some kind of sanity checking for the ROM size here to prevent
 	// a buffer overflow... !!! FIX !!!

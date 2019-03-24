@@ -11,12 +11,12 @@
 
 uint8_t CDIntfInit(void);
 void CDIntfDone(void);
-uint8_t CDIntfReadBlock(uint32_t, uint8 *);
+uint8_t CDIntfReadBlock(uint32_t, uint8_t *);
 uint32_t CDIntfGetNumSessions(void);
-void CDIntfSelectDrive(uint32);
+void CDIntfSelectDrive(uint32_t);
 uint32_t CDIntfGetCurrentDrive(void);
-const uint8 * CDIntfGetDriveName(uint32);
-uint8 CDIntfGetSessionInfo(uint32_t, uint32);
-uint8 CDIntfGetTrackInfo(uint32_t, uint32);
+const uint8_t * CDIntfGetDriveName(uint32_t);
+uint8_t CDIntfGetSessionInfo(uint32_t, uint32_t);
+uint8_t CDIntfGetTrackInfo(uint32_t, uint32_t);
 
 #endif	// __CDINTF_H__
