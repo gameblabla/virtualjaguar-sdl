@@ -79,17 +79,12 @@ void M68KInstructionHook(void)
 
 int irq_ack_handler(int level)
 {
-	int vector = M68K_INT_ACK_AUTOVECTOR;
-
-	// The GPU/DSP/etc are probably *not* issuing an NMI, but it seems to work OK...
-
-	if (level == 7)
+	if (level == 2)
 	{
 		m68k_set_irq(0);						// Clear the IRQ...
-		vector = 64;							// Set user interrupt #0
+		return 64;
 	}
-
-	return vector;
+	return M68K_INT_ACK_AUTOVECTOR;
 }
 
 unsigned int m68k_read_memory_8(unsigned int address)
@@ -827,12 +822,12 @@ if (effect_start)
 //Not sure if this is correct...
 //Seems to be, kinda. According to the JTRM, this should only fire on odd lines in non-interlace mode...
 //Which means that it normally wouldn't go when it's zero.
-		if (i == vi && i > 0 && tom_irq_enabled(IRQ_VBLANK))	// Time for Vertical Interrupt?
+		if (i == vi && i > 0 && tom_irq_enabled(IRQ_VBLANKz))	// Time for Vertical Interrupt?
 		{
 			// We don't have to worry about autovectors & whatnot because the Jaguar
 			// tells you through its HW registers who sent the interrupt...
 			tom_set_pending_video_int();
-			m68k_set_irq(7);
+			m68k_set_irq(2);
 		}
 
 //if (start_logging)
