@@ -52,7 +52,6 @@ uint32_t jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
 /*static*/ uint8_t * jaguar_mainRam = NULL;
 /*static*/ uint8_t * jaguar_mainRom = NULL;
 /*static*/ uint8_t * jaguar_bootRom = NULL;
-/*static*/ uint8_t * jaguar_CDBootROM = NULL;
 
 #ifdef CPU_DEBUG_MEMORY
 uint8_t writeMemMax[0x400000], writeMemMin[0x400000];
@@ -103,17 +102,13 @@ unsigned int m68k_read_memory_8(unsigned int address)
 		//WriteLog("[RM8  PC=%08X] Addr: %08X, val: %02X\n", m68k_get_reg(NULL, M68K_REG_PC), address, jaguar_mainRam[address]);//*/
 	unsigned int retVal = 0;
 
-	if ((address >= 0x000000) && (address <= 0x3FFFFF))
+	if (address <= 0x3FFFFF)
 		retVal = jaguar_mainRam[address];
 //	else if ((address >= 0x800000) && (address <= 0xDFFFFF))
 	else if ((address >= 0x800000) && (address <= 0xDFFEFF))
 		retVal = jaguar_mainRom[address - 0x800000];
 	else if ((address >= 0xE00000) && (address <= 0xE3FFFF))
 		retVal = jaguar_bootRom[address - 0xE00000];
-#ifdef CDROM_EMU
-	else if ((address >= 0xDFFF00) && (address <= 0xDFFFFF))
-		retVal = CDROMReadByte(address);
-#endif
 	else if ((address >= 0xF00000) && (address <= 0xF0FFFF))
 		retVal = TOMReadByte(address, M68K);
 	else if ((address >= 0xF10000) && (address <= 0xF1FFFF))
@@ -195,7 +190,7 @@ unsigned int m68k_read_memory_16(unsigned int address)
 		//WriteLog("[RM16  PC=%08X] Addr: %08X, val: %04X\n", m68k_get_reg(NULL, M68K_REG_PC), address, GET16(jaguar_mainRam, address));//*/
     unsigned int retVal = 0;
 
-	if ((address >= 0x000000) && (address <= 0x3FFFFE))
+	if (address <= 0x3FFFFE)
 //		retVal = (jaguar_mainRam[address] << 8) | jaguar_mainRam[address+1];
 		retVal = GET16(jaguar_mainRam, address);
 //	else if ((address >= 0x800000) && (address <= 0xDFFFFE))
@@ -203,10 +198,6 @@ unsigned int m68k_read_memory_16(unsigned int address)
 		retVal = (jaguar_mainRom[address - 0x800000] << 8) | jaguar_mainRom[address - 0x800000 + 1];
 	else if ((address >= 0xE00000) && (address <= 0xE3FFFE))
 		retVal = (jaguar_bootRom[address - 0xE00000] << 8) | jaguar_bootRom[address - 0xE00000 + 1];
-#ifdef CDROM_EMU
-	else if ((address >= 0xDFFF00) && (address <= 0xDFFFFE))
-		retVal = CDROMReadWord(address, M68K);
-#endif
 	else if ((address >= 0xF00000) && (address <= 0xF0FFFE))
 		retVal = TOMReadWord(address, M68K);
 	else if ((address >= 0xF10000) && (address <= 0xF1FFFE))
@@ -256,12 +247,8 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
 	if (address >= 0x18FA70 && address < (0x18FA70 + 8000))
 		//WriteLog("M68K: Byte %02X written at %08X by 68K\n", value, address);//*/
 
-	if ((address >= 0x000000) && (address <= 0x3FFFFF))
+	if (address <= 0x3FFFFF)
 		jaguar_mainRam[address] = value;
-#ifdef CDROM_EMU
-	else if ((address >= 0xDFFF00) && (address <= 0xDFFFFF))
-		CDROMWriteByte(address, value, M68K);
-#endif
 	else if ((address >= 0xF00000) && (address <= 0xF0FFFF))
 		TOMWriteByte(address, value, M68K);
 	else if ((address >= 0xF10000) && (address <= 0xF1FFFF))
@@ -291,40 +278,13 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
 		}
 	}
 #endif
-//if ((address >= 0x1FF020 && address <= 0x1FF03F) || (address >= 0x1FF820 && address <= 0x1FF83F))
-//	//WriteLog("M68K: Writing %04X at %08X\n", value, address);
-////WriteLog("[WM16 PC=%08X] Addr: %08X, val: %04X\n", m68k_get_reg(NULL, M68K_REG_PC), address, value);
-//if (address >= 0xF02200 && address <= 0xF0229F)
-//	//WriteLog("M68K: Writing to blitter --> %04X at %08X\n", value, address);
-//if (address >= 0x0E75D0 && address <= 0x0E75E7)
-//	//WriteLog("M68K: Writing %04X at %08X, M68K PC=%08X\n", value, address, m68k_get_reg(NULL, M68K_REG_PC));
-/*extern uint32_t totalFrames;
-if (address == 0xF02114)
-	//WriteLog("M68K: Writing to GPU_CTRL (frame:%u)... [M68K PC:%08X]\n", totalFrames, m68k_get_reg(NULL, M68K_REG_PC));
-if (address == 0xF02110)
-	//WriteLog("M68K: Writing to GPU_PC (frame:%u)... [M68K PC:%08X]\n", totalFrames, m68k_get_reg(NULL, M68K_REG_PC));//*/
-//if (address >= 0xF03B00 && address <= 0xF03DFF)
-//	//WriteLog("M68K: Writing %04X to %08X...\n", value, address);
 
-/*if (address == 0x0100)//64*4)
-	//WriteLog("M68K: Wrote word to VI vector value %04X...\n", value);//*/
-/*if (effect_start)
-	if (address >= 0x18FA70 && address < (0x18FA70 + 8000))
-		//WriteLog("M68K: Word %04X written at %08X by 68K\n", value, address);//*/
-/*	if (address == 0x51136 || address == 0x51138 || address == 0xFB074 || address == 0xFB076
-		|| address == 0x1AF05E)
-		//WriteLog("[WM16  PC=%08X] Addr: %08X, val: %04X\n", m68k_get_reg(NULL, M68K_REG_PC), address, value);//*/
-
-	if ((address >= 0x000000) && (address <= 0x3FFFFE))
+	if (address <= 0x3FFFFE)
 	{
 /*		jaguar_mainRam[address] = value >> 8;
 		jaguar_mainRam[address + 1] = value & 0xFF;*/
 		SET16(jaguar_mainRam, address, value);
 	}
-#ifdef CDROM_EMU
-	else if ((address >= 0xDFFF00) && (address <= 0xDFFFFE))
-		CDROMWriteWord(address, value, M68K);
-#endif
 	else if ((address >= 0xF00000) && (address <= 0xF0FFFE))
 		TOMWriteWord(address, value, M68K);
 	else if ((address >= 0xF10000) && (address <= 0xF1FFFE))
@@ -332,11 +292,6 @@ if (address == 0xF02110)
 	else
 	{
 		jaguar_unknown_writeword(address, value, M68K);
-#ifdef LOG_UNMAPPED_MEMORY_ACCESSES
-		//WriteLog("\tA0=%08X, A1=%08X, D0=%08X, D1=%08X\n",
-			m68k_get_reg(NULL, M68K_REG_A0), m68k_get_reg(NULL, M68K_REG_A1),
-			m68k_get_reg(NULL, M68K_REG_D0), m68k_get_reg(NULL, M68K_REG_D1));
-#endif
 	}
 }
 
@@ -470,10 +425,6 @@ uint8_t JaguarReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 		data = jaguar_mainRam[offset & 0x3FFFFF];
 	else if ((offset >= 0x800000) && (offset < 0xC00000))
 		data = jaguar_mainRom[offset - 0x800000];
-#ifdef CDROM_EMU
-	else if ((offset >= 0xDFFF00) && (offset <= 0xDFFFFF))
-		data = CDROMReadByte(offset, who);
-#endif
 	else if ((offset >= 0xE00000) && (offset < 0xE40000))
 		data = jaguar_bootRom[offset & 0x3FFFF];
 	else if ((offset >= 0xF00000) && (offset < 0xF10000))
@@ -499,11 +450,6 @@ uint16_t JaguarReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 		offset -= 0x800000;
 		return (jaguar_mainRom[offset+0] << 8) | jaguar_mainRom[offset+1];
 	}
-//	else if ((offset >= 0xDFFF00) && (offset < 0xDFFF00))
-#ifdef CDROM_EMU
-	else if ((offset >= 0xDFFF00) && (offset <= 0xDFFFFE))
-		return CDROMReadWord(offset, who);
-#endif
 	else if ((offset >= 0xE00000) && (offset <= 0xE3FFFE))
 		return (jaguar_bootRom[(offset+0) & 0x3FFFF] << 8) | jaguar_bootRom[(offset+1) & 0x3FFFF];
 	else if ((offset >= 0xF00000) && (offset <= 0xF0FFFE))
@@ -528,13 +474,6 @@ void JaguarWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 		jaguar_mainRam[offset & 0x3FFFFF] = data;
 		return;
 	}
-#ifdef CDROM_EMU
-	else if ((offset >= 0xDFFF00) && (offset <= 0xDFFFFF))
-	{
-		CDROMWriteByte(offset, data, who);
-		return;
-	}
-#endif
 	else if ((offset >= 0xF00000) && (offset <= 0xF0FFFF))
 	{
 		TOMWriteByte(offset, data, who);
@@ -552,121 +491,15 @@ void JaguarWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 uint32_t starCount;
 void JaguarWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
-/*if (offset == 0x0100)//64*4)
-	//WriteLog("M68K: %s wrote word to VI vector value %04X...\n", whoName[who], data);
-if (offset == 0x0102)//64*4)
-	//WriteLog("M68K: %s wrote word to VI vector+2 value %04X...\n", whoName[who], data);//*/
-//TEMP--Mirror of F03000? Yes, but only 32-bit CPUs can do it (i.e., NOT the 68K!)
-// PLUS, you would handle this in the GPU/DSP WriteLong code! Not here!
-//Need to check for writes in the range of $18FA70 + 8000...
-/*if (effect_start)
-	if (offset >= 0x18FA70 && offset < (0x18FA70 + 8000))
-		//WriteLog("JWW: Word %04X written at %08X by %s\n", data, offset, whoName[who]);//*/
-/*if (offset >= 0x2C00 && offset <= 0x2CFF)
-	//WriteLog("Jaguar: Word %04X written to TOC+%02X by %s\n", data, offset-0x2C00, whoName[who]);//*/
-
 	who = UNKNOWN;
 	offset &= 0xFFFFFF;
 
 	if (offset <= 0x3FFFFE)
 	{
-/*
-GPU Table (CD BIOS)
-
-1A 69 F0 ($0000) -> Starfield
-1A 73 C8 ($0001) -> Final clearing blit & bitmap blit?
-1A 79 F0 ($0002)
-1A 88 C0 ($0003)
-1A 8F E8 ($0004) -> "Jaguar" small color logo?
-1A 95 20 ($0005)
-1A 9F 08 ($0006)
-1A A1 38 ($0007)
-1A AB 38 ($0008)
-1A B3 C8 ($0009)
-1A B9 C0 ($000A)
-*/
-
-//This MUST be done by the 68K!
-/*if (offset == 0x670C)
-	//WriteLog("Jaguar: %s writing to location $670C...\n", whoName[who]);*/
-
-/*extern uint8_t doGPUDis;
-//if ((offset == 0x100000 + 75522) && who == GPU)	// 76,226 -> 75522
-if ((offset == 0x100000 + 128470) && who == GPU)	// 107,167 -> 128470 (384 x 250 screen size 16BPP)
-//if ((offset >= 0x100000 && offset <= 0x12C087) && who == GPU)
-	doGPUDis = true;//*/
-/*if (offset == 0x100000 + 128470) // 107,167 -> 128470 (384 x 250 screen size 16BPP)
-	//WriteLog("JWW: Writing value %04X at %08X by %s...\n", data, offset, whoName[who]);
-if ((data & 0xFF00) != 0x7700)
-	//WriteLog("JWW: Writing value %04X at %08X by %s...\n", data, offset, whoName[who]);//*/
-/*if ((offset >= 0x100000 && offset <= 0x147FFF) && who == GPU)
-	return;//*/
-/*if ((data & 0xFF00) != 0x7700 && who == GPU)
-	//WriteLog("JWW: Writing value %04X at %08X by %s...\n", data, offset, whoName[who]);//*/
-/*if ((offset >= 0x100000 + 0x48000 && offset <= 0x12C087 + 0x48000) && who == GPU)
-	return;//*/
-/*extern uint8_t doGPUDis;
-if (offset == 0x120216 && who == GPU)
-	doGPUDis = true;//*/
-/*extern uint32_t gpu_pc;
-if (who == GPU && (gpu_pc == 0xF03604 || gpu_pc == 0xF03638))
-{
-	uint32_t base = offset - (offset > 0x148000 ? 0x148000 : 0x100000);
-	uint32_t y = base / 0x300;
-	uint32_t x = (base - (y * 0x300)) / 2;
-	//WriteLog("JWW: Writing starfield star %04X at %08X (%u/%u) [%s]\n", data, offset, x, y, (gpu_pc == 0xF03604 ? "s" : "L"));
-}//*/
-/*
-JWW: Writing starfield star 775E at 0011F650 (555984/1447)
-*/
-//if (offset == (0x001E17F8 + 0x34))
-/*if (who == GPU && offset == (0x001E17F8 + 0x34))
-	data = 0xFE3C;//*/
-//	//WriteLog("JWW: Write at %08X written to by %s.\n", 0x001E17F8 + 0x34, whoName[who]);//*/
-/*extern uint32_t gpu_pc;
-if (who == GPU && (gpu_pc == 0xF03604 || gpu_pc == 0xF03638))
-{
-	extern int objectPtr;
-//	if (offset > 0x148000)
-//		return;
-	starCount++;
-	if (starCount > objectPtr)
-		return;
-
-//	if (starCount == 1)
-//		//WriteLog("--> Drawing 1st star...\n");
-//
-//	uint32_t base = offset - (offset > 0x148000 ? 0x148000 : 0x100000);
-//	uint32_t y = base / 0x300;
-//	uint32_t x = (base - (y * 0x300)) / 2;
-//	//WriteLog("JWW: Writing starfield star %04X at %08X (%u/%u) [%s]\n", data, offset, x, y, (gpu_pc == 0xF03604 ? "s" : "L"));
-
-//A star of interest...
-//-->JWW: Writing starfield star 77C9 at 0011D31A (269/155) [s]
-//1st trail +3(x), -1(y) -> 272, 154 -> 0011D020
-//JWW: Blitter writing echo 77B3 at 0011D022...
-}//*/
-//extern uint8_t doGPUDis;
-/*if (offset == 0x11D022 + 0x48000 || offset == 0x11D022)// && who == GPU)
-{
-//	doGPUDis = true;
-	//WriteLog("JWW: %s writing echo %04X at %08X...\n", whoName[who], data, offset);
-//	LogBlit();
-}
-if (offset == 0x11D31A + 0x48000 || offset == 0x11D31A)
-	//WriteLog("JWW: %s writing star %04X at %08X...\n", whoName[who], data, offset);//*/
-
 		jaguar_mainRam[(offset+0) & 0x3FFFFF] = data >> 8;
 		jaguar_mainRam[(offset+1) & 0x3FFFFF] = data & 0xFF;
 		return;
 	}
-#ifdef CDROM_EMU
-	else if (offset >= 0xDFFF00 && offset <= 0xDFFFFE)
-	{
-		CDROMWriteWord(offset, data, who);
-		return;
-	}
-#endif
 	else if (offset >= 0xF00000 && offset <= 0xF0FFFE)
 	{
 		TOMWriteWord(offset, data, who);
@@ -720,7 +553,6 @@ void jaguar_init(void)
 	memory_malloc_secure((void **)&jaguar_mainRam, 0x400000, "Jaguar 68K CPU RAM");
 	memory_malloc_secure((void **)&jaguar_mainRom, 0x600000, "Jaguar 68K CPU ROM");
 	memory_malloc_secure((void **)&jaguar_bootRom, 0x040000, "Jaguar 68K CPU BIOS ROM"); // Only uses half of this!
-	memory_malloc_secure((void **)&jaguar_CDBootROM, 0x040000, "Jaguar 68K CPU CD BIOS ROM");
 	memset(jaguar_mainRam, 0x00, 0x400000);
 //	memset(jaguar_mainRom, 0xFF, 0x200000);	// & set it to all Fs...
 //	memset(jaguar_mainRom, 0x00, 0x200000);	// & set it to all 0s...
@@ -737,9 +569,6 @@ void jaguar_init(void)
 	#endif
 	tom_init();
 	jerry_init();
-#ifdef CDROM_EMU
-	CDROMInit();
-#endif
 }
 
 void jaguar_reset(void)
@@ -748,27 +577,18 @@ void jaguar_reset(void)
 		memcpy(jaguar_mainRam, jaguar_bootRom, 8);
 	else
 		SET32(jaguar_mainRam, 4, jaguarRunAddress);
-
-//	//WriteLog("jaguar_reset():\n");
+		
 	tom_reset();
 	jerry_reset();
 	GPUReset();
 	#ifdef DSP_EMU
 	DSPReset();
 	#endif
-#ifdef CDROM_EMU
-	CDROMReset();
-#endif
     m68k_pulse_reset();								// Reset the 68000
-	//WriteLog("Jaguar: 68K reset. PC=%06X SP=%08X\n", m68k_get_reg(NULL, M68K_REG_PC), m68k_get_reg(NULL, M68K_REG_A7));
 }
 
 void jaguar_done(void)
 {
-#ifdef CDROM_EMU
-	CDROMDone();
-#endif
-	GPUDone();
 	#ifdef DSP_EMU
 	DSPDone();
 	#endif
@@ -778,7 +598,6 @@ void jaguar_done(void)
 	memory_free(jaguar_mainRom);
 	memory_free(jaguar_mainRam);
 	memory_free(jaguar_bootRom);
-	memory_free(jaguar_CDBootROM);
 }
 
 //
@@ -806,22 +625,14 @@ void JaguarExecute(int16_t * backbuffer, uint8_t render)
 		= (vjs.hardwareTypeNTSC ? RISC_CLOCK_RATE_NTSC : RISC_CLOCK_RATE_PAL) / (vp * refreshRate);
 
 	TOMResetBackbuffer(backbuffer);
-/*extern int effect_start;
-if (effect_start)
-	//WriteLog("JagExe: VP=%u, VI=%u, CPU CPS=%u, GPU CPS=%u\n", vp, vi, M68KCyclesPerScanline, RISCCyclesPerScanline);//*/
 
-//extern int start_logging;
 	for(uint16_t i=0; i<vp; i++)
 	{
 		// Increment the horizontal count (why? RNG? Besides which, this is *NOT* cycle accurate!)
 		TOMWriteWord(0xF00004, (TOMReadWord(0xF00004, UNKNOWN) + 1) & 0x7FF, UNKNOWN);
 
 		TOMWriteWord(0xF00006, i, UNKNOWN);					// Write the VC
-
-//		if (i == vi)								// Time for Vertical Interrupt?
-//Not sure if this is correct...
-//Seems to be, kinda. According to the JTRM, this should only fire on odd lines in non-interlace mode...
-//Which means that it normally wouldn't go when it's zero.
+		
 		if (i == vi && i > 0 && tom_irq_enabled(IRQ_VBLANK))	// Time for Vertical Interrupt?
 		{
 			// We don't have to worry about autovectors & whatnot because the Jaguar
@@ -830,23 +641,10 @@ if (effect_start)
 			m68k_set_irq(2);
 		}
 
-//if (start_logging)
-//	//WriteLog("About to execute M68K (%u)...\n", i);
 		m68k_execute(M68KCyclesPerScanline);
-//if (start_logging)
-//	//WriteLog("About to execute TOM's PIT (%u)...\n", i);
 		TOMExecPIT(RISCCyclesPerScanline);
-//if (start_logging)
-//	//WriteLog("About to execute JERRY's PIT (%u)...\n", i);
 		JERRYExecPIT(RISCCyclesPerScanline);
-//if (start_logging)
-//	//WriteLog("About to execute JERRY's SSI (%u)...\n", i);
 		jerry_i2s_exec(RISCCyclesPerScanline);
-#ifdef CDROM_EMU
-		BUTCHExec(RISCCyclesPerScanline);
-#endif
-//if (start_logging)
-//	//WriteLog("About to execute GPU (%u)...\n", i);
 		GPUExec(RISCCyclesPerScanline);
 
 		#ifdef DSP_EMU
@@ -859,20 +657,6 @@ if (effect_start)
 //			DSPExecComp(RISCCyclesPerScanline);		// Comparison core
 		}
 		#endif
-
-//if (start_logging)
-//	//WriteLog("About to execute OP (%u)...\n", i);
 		TOMExecScanline(i, render);
 	}
-}
-
-// Temp debugging stuff
-
-void DumpMainMemory(void)
-{
-}
-
-uint8_t * GetRamPtr(void)
-{
-	return jaguar_mainRam;
 }

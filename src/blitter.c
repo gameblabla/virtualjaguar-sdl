@@ -20,16 +20,11 @@ extern int jaguar_active_memory_dumps;
 // Local global variables
 
 uint8_t blitter_working = 0;
-uint8_t startConciseBlitLogging = false;
-uint8_t logBlit = false;
 
 // Blitter register RAM (most of it is hidden from the user)
 
 static uint8_t blitter_ram[0x100];
 
-// Other crapola
-
-uint8_t specialLog = false;
 extern int effect_start;
 void BlitterMidsummer(uint32_t cmd);
 void BlitterMidsummer2(void);

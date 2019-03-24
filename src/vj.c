@@ -27,14 +27,12 @@
 extern uint8_t * jaguar_mainRam;
 extern uint8_t * jaguar_mainRom;
 extern uint8_t * jaguar_bootRom;
-extern uint8_t * jaguar_CDBootROM;
 
 // Global variables (export capable)
 //should these even be here anymore?
 
 uint8_t finished = false;
 uint8_t BIOSLoaded = false;
-uint8_t CDBIOSLoaded = false;
 
 //
 // The main emulator loop (what else?)
@@ -45,7 +43,6 @@ uint32_t totalFrames;
 
 int main(int argc, char * argv[])
 {
-//	int32_t nNormalFrac = 0; 
 	int32_t nFrameskip = 0;							// Default: Show every frame
 
 	printf("Virtual Jaguar GCC/SDL Portable Jaguar Emulator v1.0.7\n");
@@ -54,7 +51,6 @@ int main(int argc, char * argv[])
 	printf("James L. Hammons (WIN32) and Adam Green (MacOS)\n");
 	printf("Contact: http://sdlemu.ngemu.com/ | sdlemu@ngemu.com\n");
 
-	uint8_t haveCart = false;							// Assume there is no cartridge...!
 	LoadVJSettings();								// Get config file settings...
 
 	// Check the switches... ;-)
@@ -63,10 +59,6 @@ int main(int argc, char * argv[])
 
 	for(int i=1; i<argc || argv[i]!=NULL; i++)
 	{
-		// This would be the most likely place to do the cart loading...
-		if (argv[i][0] != '-')
-			haveCart = true;						// It looks like we have a cartridge!
-
 		if (!strcmp(argv[i], "-joystick")) 
 			vjs.useJoystick = true;
 
@@ -105,12 +97,6 @@ int main(int argc, char * argv[])
 		if (!strcmp(argv[i], "-nopipeline"))
 			vjs.usePipelinedDSP = false;
 
-		if (!strcmp(argv[i], "-gl"))
-			vjs.useOpenGL = true;
-
-		if (!strcmp(argv[i], "-nogl"))
-			vjs.useOpenGL = false;
-
 		if (!strcmp(argv[i], "-fullscreen")) 
 			vjs.fullscreen = true;
 
@@ -137,8 +123,6 @@ int main(int argc, char * argv[])
 			printf("  -nodsp          : Force VJ to run without the DSP           \n");
 			printf("  -pipeline       : Use the DSP pipelined core                \n");
 			printf("  -nopipeline     : Use the DSP non-pipelined core            \n");
-			printf("  -gl             : Use OpenGL rendering                      \n");
-			printf("  -nogl           : Use old non-OpenGL rendering              \n");
 			printf("  -fullscreen     : Enable fullscreen mode (default: windowed)\n");
 			printf("  -window         : Enable windowed mode                      \n");
 			printf("  -pal            : Force VJ to PAL mode (default: NTSC)      \n");
@@ -151,8 +135,6 @@ int main(int argc, char * argv[])
 
 	// Set up SDL library
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0)
-	//	| SDL_INIT_CDROM) < 0)
-	//	| SDL_INIT_CDROM | SDL_INIT_NOPARACHUTE) < 0)
 	{
 		return -1;
 	}
@@ -166,7 +148,6 @@ int main(int argc, char * argv[])
 	// What would be nice here would be a way to check if the BIOS was loaded so that we
 	// could disable the pushbutton on the Misc Options menu... !!! FIX !!! [DONE here, but needs to be fixed in GUI as well!]
 	BIOSLoaded = (JaguarLoadROM(jaguar_bootRom, vjs.jagBootPath) == 0x20000 ? true : false);
-	CDBIOSLoaded = (JaguarLoadROM(jaguar_CDBootROM, vjs.CDBootPath) == 0x40000 ? true : false);
 
 	SET32(jaguar_mainRam, 0, 0x00200000);			// Set top of stack...
 
@@ -175,17 +156,12 @@ int main(int argc, char * argv[])
 
 	GUIMain(argv[1]);
 
-	//This is no longer accurate...!
-	//	int elapsedTime = clock() - startTime;
-	//	int fps = (1000 * totalFrames) / elapsedTime;
-
 	jaguar_done();
 	VersionDone();
 	MemoryDone();
 	VideoDone();
 
 	// Free SDL components last...!
-	//SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_CDROM);
 	SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER);
 	SDL_Quit();
 

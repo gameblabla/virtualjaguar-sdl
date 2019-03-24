@@ -301,10 +301,6 @@
 #define TOP_VISIBLE_VC_PAL		67
 #define BOTTOM_VISIBLE_VC_PAL	579
 
-//This can be defined in the makefile as well...
-//(It's easier to do it here, though...)
-//#define TOM_DEBUG
-
 extern uint8_t objectp_running;
 
 static uint8_t * tom_ram_8;
@@ -318,10 +314,6 @@ uint16_t tom_jerry_int_pending, tom_timer_int_pending, tom_object_int_pending,
 	tom_gpu_int_pending, tom_video_int_pending;
 uint16_t * tom_cry_rgb_mix_lut;
 int16_t * TOMBackbuffer;
-
-static char * videoMode_to_str[8] =
-	{ "16 BPP CRY", "24 BPP RGB", "16 BPP DIRECT", "16 BPP RGB",
-	  "Mixed mode", "24 BPP RGB", "16 BPP DIRECT", "16 BPP RGB" };
 
 typedef void (render_xxx_scanline_fn)(int16_t *);
 
@@ -957,13 +949,6 @@ void tom_done(void)
 	op_done();
 //This should be done by JERRY!	pcm_done();
 	blitter_done();
-	/*WriteLog("TOM: Resolution %i x %i %s\n", tom_getVideoModeWidth(), tom_getVideoModeHeight(),
-		videoMode_to_str[tom_getVideoMode()]);*/
-//	WriteLog("\ntom: object processor:\n");
-//	WriteLog("tom: pointer to object list: 0x%.8x\n",op_get_list_pointer());
-//	WriteLog("tom: INT1=0x%.2x%.2x\n",TOMReadByte(0xf000e0),TOMReadByte(0xf000e1));
-//	gpu_done();
-//	dsp_done();
 	memory_free(tom_ram_8);
 	memory_free(tom_cry_rgb_mix_lut);
 }
@@ -1012,23 +997,6 @@ uint32_t tom_getVideoModeWidth(void)
 //Temporary, for testing Doom...
 //	return (RIGHT_VISIBLE_HC - LEFT_VISIBLE_HC) / (pwidth == 8 ? 4 : pwidth);
 ////	return (RIGHT_VISIBLE_HC - LEFT_VISIBLE_HC) / (pwidth == 4 ? 8 : pwidth);
-
-// More speculating...
-// According to the JTRM, the number of potential pixels across is given by the
-// Horizontal Period (HP - in NTSC this is 845). The Horizontal Count counts from
-// zero to this value twice per scanline (the high bit is set on the second count).
-// HBE and HBB define the absolute "black" limits of the screen, while HDB1/2 and
-// HDE determine the extent of the OP "on" time. I.e., when the OP is turned on by
-// HDB1, it starts fetching the line from position 0 in LBUF.
-
-// The trick, it would seem, is to figure out how long the typical visible scanline
-// of a TV is in HP ticks and limit the visible area to that (divided by PWIDTH, of
-// course). Using that length, we can establish an "absolute left display limit" with
-// which to measure HBB & HDB1/2 against when rendering LBUF (i.e., if HDB1 is 20 ticks
-// to the right of the ALDL and PWIDTH is 4, then start writing the LBUF starting at
-// backbuffer + 5 pixels).
-
-// That's basically what we're doing now...!
 }
 
 // *** SPECULATION ***
@@ -1039,30 +1007,6 @@ uint32_t tom_getVideoModeWidth(void)
 // Now that that the width is virtualized, let's virtualize the height. :-)
 uint32_t tom_getVideoModeHeight(void)
 {
-//	uint16_t vmode = GET16(tom_ram_8, VMODE);
-//	uint16_t vbe = GET16(tom_ram_8, VBE);
-//	uint16_t vbb = GET16(tom_ram_8, VBB);
-//	uint16_t vdb = GET16(tom_ram_8, VDB);
-//	uint16_t vde = GET16(tom_ram_8, VDE);
-//	uint16_t vp = GET16(tom_ram_8, VP);
-	
-/*	if (vde == 0xFFFF)
-		vde = vbb;//*/
-
-//	return 227;//WAS:(vde/*-vdb*/) >> 1;
-	// The video mode height probably works this way:
-	// VC counts from 0 to VP. VDB starts the OP. Either when
-	// VDE is reached or VP, the OP is stopped. Let's try it...
-	// Also note that we're conveniently ignoring interlaced display modes...!
-//	return ((vde > vp ? vp : vde) - vdb) >> 1;
-//	return ((vde > vbb ? vbb : vde) - vdb) >> 1;
-//Let's try from the Vertical Blank interval...
-//Seems to work OK!
-//	return (vbb - vbe) >> 1;	// Again, doesn't take interlacing into account...
-// This of course doesn't take interlacing into account. But I haven't seen any
-// Jaguar software that takes advantage of it either...
-//Also, doesn't reflect PAL Jaguar either... !!! FIX !!! [DONE]
-//	return 240;										// Set virtual screen height to 240 lines...
 	return (vjs.hardwareTypeNTSC ? 240 : 256);
 }
 
@@ -1134,15 +1078,6 @@ void tom_reset(void)
 uint8_t TOMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
-//???Is this needed???
-// It seems so. Perhaps it's the +$8000 offset being written to (32-bit interface)?
-// However, the 32-bit interface is WRITE ONLY, so that can't be it...
-// Also, the 68K CANNOT make use of the 32-bit interface, since its bus width is only 16-bits...
-//	offset &= 0xFF3FFF;
-
-#ifdef TOM_DEBUG
-	WriteLog("TOM: Reading byte at %06X\n", offset);
-#endif
 
 	if ((offset >= GPU_CONTROL_RAM_BASE) && (offset < GPU_CONTROL_RAM_BASE+0x20))
 		return GPUReadByte(offset, who);
@@ -1170,12 +1105,6 @@ uint8_t TOMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 uint16_t TOMReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
 	who = UNKNOWN;
-//???Is this needed???
-//	offset &= 0xFF3FFF;
-#ifdef TOM_DEBUG
-	WriteLog("TOM: Reading word at %06X\n", offset);
-#endif
-
 	if (offset == 0xF000E0)
 	{
 		uint16_t data = (tom_jerry_int_pending << 4) | (tom_timer_int_pending << 3)

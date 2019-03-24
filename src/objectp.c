@@ -52,7 +52,6 @@ static uint8_t objectp_ram[0x40];			// This is based at $F00000
 uint8_t objectp_running;
 //uint8_t objectp_stop_reading_list;
 
-static uint8_t op_bitmap_bit_depth[8] = { 1, 2, 4, 8, 16, 24, 32, 0 };
 //static uint32_t op_bitmap_bit_size[8] =
 //	{ (uint32_t)(0.125*65536), (uint32_t)(0.25*65536), (uint32_t)(0.5*65536), (uint32_t)(1*65536),
 //	  (uint32_t)(2*65536),     (uint32_t)(1*65536),    (uint32_t)(1*65536),   (uint32_t)(1*65536) };
@@ -117,33 +116,6 @@ void op_reset(void)
 
 void op_done(void)
 {
-	char * opType[8] =
-	{ "(BITMAP)", "(SCALED BITMAP)", "(GPU INT)", "(BRANCH)", "(STOP)", "???", "???", "???" };
-	char * ccType[8] =
-		{ "\"==\"", "\"<\"", "\">\"", "(opflag set)", "(second half line)", "?", "?", "?" };
-
-	uint32_t olp = op_get_list_pointer();
-	//WriteLog("OP: OLP = %08X\n", olp);
-	//WriteLog("OP: Phrase dump\n    ----------\n");
-	for(uint32_t i=0; i<0x100; i+=8)
-	{
-		uint32_t hi = JaguarReadLong(olp + i, OP), lo = JaguarReadLong(olp + i + 4, OP);
-		//WriteLog("\t%08X: %08X %08X %s", olp + i, hi, lo, opType[lo & 0x07]);
-		if ((lo & 0x07) == 3)
-		{
-			uint16_t ypos = (lo >> 3) & 0x7FF;
-			uint8_t  cc   = (lo >> 14) & 0x03;
-			uint32_t link = ((hi << 11) | (lo >> 21)) & 0x3FFFF8;
-			//WriteLog(" YPOS=%u, CC=%s, link=%08X", ypos, ccType[cc], link);
-		}
-		//WriteLog("\n");
-		if ((lo & 0x07) == 0)
-			DumpFixedObject(op_load_phrase(olp+i), op_load_phrase(olp+i+8));
-		if ((lo & 0x07) == 1)
-			DumpScaledObject(op_load_phrase(olp+i), op_load_phrase(olp+i+8), op_load_phrase(olp+i+16));
-	}
-	//WriteLog("\n");
-
 	memory_free(op_blend_y);
 	memory_free(op_blend_cr);
 }
@@ -256,16 +228,6 @@ void OPStorePhrase(uint32_t offset, uint64_t p)
 	JaguarWriteLong(offset + 4, p & 0xFFFFFFFF, OP);
 }
 
-//
-// Debugging routines
-//
-void DumpScaledObject(uint64_t p0, uint64_t p1, uint64_t p2)
-{
-}
-
-void DumpFixedObject(uint64_t p0, uint64_t p1)
-{
-}
 
 //
 // Object Processor main routine
@@ -702,8 +664,6 @@ void OPProcessFixedBitmap(uint64_t p0, uint64_t p1, uint8_t render)
 //		rightMargin = lbufWidth + (clippedWidth % phraseWidthToPixels[depth]);
 //		rightMargin = lbufWidth;
 */
-if (depth > 5)
-	//WriteLog("OP: We're about to encounter a divide by zero error!\n");
 	// NOTE: We're just using endPos to figure out how much, if any, to clip by.
 	// ALSO: There may be another case where we start out of bounds and end out of bounds...!
 	// !!! FIX !!!
@@ -993,21 +953,11 @@ if (depth > 5)
 //
 void OPProcessScaledBitmap(uint64_t p0, uint64_t p1, uint64_t p2, uint8_t render)
 {
-// Need to make sure that when writing that it stays within the line buffer...
-// LBUF ($F01800 - $F01D9E) 360 x 32-bit RAM
 	uint8_t depth = (p1 >> 12) & 0x07;				// Color depth of image
 	int32_t xpos = ((int16_t)((p1 << 4) & 0xFFFF)) >> 4;// Image xpos in LBUF
 	uint32_t iwidth = (p1 >> 28) & 0x3FF;				// Image width in *phrases*
 	uint32_t data = (p0 >> 40) & 0xFFFFF8;			// Pixel data address
-//#ifdef OP_DEBUG_BMP
-// Prolly should use this... Though not sure exactly how.
-//Use the upper bits as an offset into the phrase depending on the BPP. That's how!
-	uint32_t firstPix = (p1 >> 49) & 0x3F;
-//This is WEIRD! I'm sure I saw Atari Karts request 8 BPP FIRSTPIX! What happened???
-//#endif
-// We can ignore the RELEASE (high order) bit for now--probably forever...!
-//	uint8_t flags = (p1 >> 45) & 0x0F;	// REFLECT, RMW, TRANS, RELEASE
-//Optimize: break these out to their own BOOL values [DONE]
+
 	uint8_t flags = (p1 >> 45) & 0x07;				// REFLECT (0), RMW (1), TRANS (2)
 	uint8_t flagREFLECT = (flags & OPFLAG_REFLECT ? true : false),
 		flagRMW = (flags & OPFLAG_RMW ? true : false),
@@ -1022,29 +972,16 @@ void OPProcessScaledBitmap(uint64_t p0, uint64_t p1, uint64_t p2, uint8_t render
 	uint16_t * paletteRAM16 = (uint16_t *)paletteRAM;
 
 	uint16_t hscale = p2 & 0xFF;
-// Hmm. It seems that fixing the horizontal scale necessitated re-fixing this. Not sure why,
-// but seems to be consistent with the vertical scaling now (and it may turn out to be wrong!)...
+	// Hmm. It seems that fixing the horizontal scale necessitated re-fixing this. Not sure why,
+	// but seems to be consistent with the vertical scaling now (and it may turn out to be wrong!)...
 	uint16_t horizontalRemainder = hscale;				// Not sure if it starts full, but seems reasonable [It's not!]
-//	uint8_t horizontalRemainder = 0;					// Let's try zero! Seems to work! Yay! [No, it doesn't!]
+	
 	int32_t scaledWidthInPixels = (iwidth * phraseWidthToPixels[depth] * hscale) >> 5;
 	uint32_t scaledPhrasePixels = (phraseWidthToPixels[depth] * hscale) >> 5;
-
-//	//WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
-//		iwidth, op_bitmap_bit_depth[bitdepth], xpos, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), (flags&OPFLAG_RMW ? "yes" : "no"), (flags&OPFLAG_TRANS ? "yes" : "no"));
 
 // Looks like an hscale of zero means don't draw!
 	if (!render || iwidth == 0 || hscale == 0)
 		return;
-
-/*extern int start_logging;
-if (start_logging)
-	//WriteLog("OP: Scaled bitmap %ix? %ibpp at %i,? hscale=%02X fpix=%i data=%08X pitch %i hflipped=%s dwidth=? (linked to %08X) Transluency=%s\n",
-		iwidth, op_bitmap_bit_depth[depth], xpos, hscale, firstPix, data, pitch, (flagREFLECT ? "yes" : "no"), op_pointer, (flagRMW ? "yes" : "no"));*/
-//#define OP_DEBUG_BMP
-//#ifdef OP_DEBUG_BMP
-//	//WriteLog("OP: Scaled bitmap %ix%i %ibpp at %i,%i firstpix=%i data=0x%.8x pitch %i hflipped=%s dwidth=%i (linked to 0x%.8x) Transluency=%s\n",
-//		iwidth, height, op_bitmap_bit_depth[bitdepth], xpos, ypos, firstPix, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), dwidth, op_pointer, (flags&OPFLAG_RMW ? "yes" : "no"));
-//#endif
 
 	int32_t startPos = xpos, endPos = xpos +
 		(!flagREFLECT ? scaledWidthInPixels - 1 : -(scaledWidthInPixels + 1));
@@ -1052,123 +989,48 @@ if (start_logging)
 	uint8_t in24BPPMode = (((GET16(tom_ram_8, 0x0028) >> 1) & 0x03) == 1 ? true : false);	// VMODE
 	// Not sure if this is Jaguar Two only location or what...
 	// From the docs, it is... If we want to limit here we should think of something else.
-//	int32_t limit = GET16(tom_ram_8, 0x0008);			// LIMIT
+	//	int32_t limit = GET16(tom_ram_8, 0x0008);			// LIMIT
 	int32_t limit = 720;
 	int32_t lbufWidth = (!in24BPPMode ? limit - 1 : (limit / 2) - 1);	// Zero based limit...
-
-	// If the image is completely to the left or right of the line buffer, then bail.
-//If in REFLECT mode, then these values are swapped! !!! FIX !!! [DONE]
-//There are four possibilities:
-//  1. image sits on left edge and no REFLECT; starts out of bounds but ends in bounds.
-//  2. image sits on left edge and REFLECT; starts in bounds but ends out of bounds.
-//  3. image sits on right edge and REFLECT; starts out of bounds but ends in bounds.
-//  4. image sits on right edge and no REFLECT; starts in bounds but ends out of bounds.
-//Numbers 2 & 4 can be caught by checking the LBUF clip while in the inner loop,
-// numbers 1 & 3 are of concern.
-// This *indirectly* handles only cases 2 & 4! And is WRONG if REFLECT is set...!
-//	if (rightMargin < 0 || leftMargin > lbufWidth)
-
-// It might be easier to swap these (if REFLECTed) and just use XPOS down below...
-// That way, you could simply set XPOS to leftMargin if !REFLECT and to rightMargin otherwise.
-// Still have to be careful with the DATA and IWIDTH values though...
 
 	if ((!flagREFLECT && (endPos < 0 || startPos > lbufWidth))
 		|| (flagREFLECT && (startPos < 0 || endPos > lbufWidth)))
 		return;
 
-	// Otherwise, find the clip limits and clip the phrase as well...
-	// NOTE: I'm fudging here by letting the actual blit overstep the bounds of the
-	//       line buffer, but it shouldn't matter since there are two unused line
-	//       buffers below and nothing above and I'll at most write 40 bytes outside
-	//       the line buffer... I could use a fractional clip begin/end value, but
-	//       this makes the blit a *lot* more hairy. I might fix this in the future
-	//       if it becomes necessary. (JLH)
-	//       Probably wouldn't be *that* hairy. Just use a delta that tells the inner loop
-	//       which pixel in the phrase is being written, and quit when either end of phrases
-	//       is reached or line buffer extents are surpassed.
-
-//This stuff is probably wrong as well... !!! FIX !!!
-//The strange thing is that it seems to work, but that's no guarantee that it's bulletproof!
-//Yup. Seems that JagMania doesn't work correctly with this...
-//Dunno if this is the problem, but Atari Karts is showing *some* of the road now...
-//Actually, it is! Or, it was. It doesn't seem to be clipping here, so the problem lies
-//elsewhere! Hmm. Putting the scaling code into the 1/2/8 BPP cases seems to draw the ground
-// a bit more accurately... Strange!
-//It's probably a case of the REFLECT flag being set and the background being written
-//from the right side of the screen...
-//But no, it isn't... At least if the diagnostics are telling the truth!
-
-	// NOTE: We're just using endPos to figure out how much, if any, to clip by.
-	// ALSO: There may be another case where we start out of bounds and end out of bounds...!
-	// !!! FIX !!!
-
-//There's a problem here with scaledPhrasePixels in that it can be forced to zero when
-//the scaling factor is small. So fix it already! !!! FIX !!!
-/*if (scaledPhrasePixels == 0)
-{
-	//WriteLog("OP: [Scaled] We're about to encounter a divide by zero error!\n");
-	DumpScaledObject(p0, p1, p2);
-}//*/
-//NOTE: I'm almost 100% sure that this is wrong... And it is! :-p
-
-//Try a simple example...
-// Let's say we have a 8 BPP scanline with an hscale of $80 (4). Our xpos is -10,
-// non-flipped. Pixels in the bitmap are XYZXYZXYZXYZXYZ.
-// Scaled up, they would be XXXXYYYYZZZZXXXXYYYYZZZZXXXXYYYYZZZZ...
-//
-// Normally, we would expect this in the line buffer:
-// ZZXXXXYYYYZZZZXXXXYYYYZZZZ...
-//
-// But instead we're getting:
-// XXXXYYYYZZZZXXXXYYYYZZZZ...
-//
-// or are we??? It would seem so, simply by virtue of the fact that we're NOT starting
-// on negative boundary--or are we? Hmm...
-// cw = 10, dcw = pcw = 10 / ([8 * 4 = 32] 32) = 0, sp = -10
-//
-// Let's try a real world example:
-//
-//OP: Scaled bitmap (70, 8 BPP, spp=28) sp (-400) < 0... [new sp=-8, cw=400, dcw=pcw=14]
-//OP: Scaled bitmap (6F, 8 BPP, spp=27) sp (-395) < 0... [new sp=-17, cw=395, dcw=pcw=14]
-//
-// Really, spp is 27.75 in the second case...
-// So... If we do 395 / 27.75, we get 14. Ok so far... If we scale that against the
-// start position (14 * 27.75), we get -6.5... NOT -17!
-
-//Now it seems we're working OK, at least for the first case...
-uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
+	//Now it seems we're working OK, at least for the first case...
+	uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 	if (startPos < 0)			// Case #1: Begin out, end in, L to R
-{
-//		clippedWidth = 0 - startPos,
-		clippedWidth = (0 - startPos) << 5,
-//		dataClippedWidth = phraseClippedWidth = clippedWidth / scaledPhrasePixels,
-		dataClippedWidth = phraseClippedWidth = (clippedWidth / scaledPhrasePixelsUS) >> 5,
-//		startPos = 0 - (clippedWidth % scaledPhrasePixels);
+	{
+		clippedWidth = (0 - startPos) << 5;
+		dataClippedWidth = phraseClippedWidth = (clippedWidth / scaledPhrasePixelsUS) >> 5;
 		startPos += (dataClippedWidth * scaledPhrasePixelsUS) >> 5;
-}
+	}
 
 	if (endPos < 0)				// Case #2: Begin in, end out, R to L
-		clippedWidth = 0 - endPos,
+	{
+		clippedWidth = 0 - endPos;
 		phraseClippedWidth = clippedWidth / scaledPhrasePixels;
+	}
 
 	if (endPos > lbufWidth)		// Case #3: Begin in, end out, L to R
-		clippedWidth = endPos - lbufWidth,
+	{
+		clippedWidth = endPos - lbufWidth;
 		phraseClippedWidth = clippedWidth / scaledPhrasePixels;
+	}
 
 	if (startPos > lbufWidth)	// Case #4: Begin out, end in, R to L
-		clippedWidth = startPos - lbufWidth,
-		dataClippedWidth = phraseClippedWidth = clippedWidth / scaledPhrasePixels,
+	{
+		clippedWidth = startPos - lbufWidth;
+		dataClippedWidth = phraseClippedWidth = clippedWidth / scaledPhrasePixels;
 		startPos = lbufWidth + (clippedWidth % scaledPhrasePixels);
+	}
 
 	// If the image is sitting on the line buffer left or right edge, we need to compensate
 	// by decreasing the image phrase width accordingly.
 	iwidth -= phraseClippedWidth;
 
-	// Also, if we're clipping the phrase we need to make sure we're in the correct part of
-	// the pixel data.
-//	data += phraseClippedWidth * (pitch << 3);
-	data += dataClippedWidth * (pitch << 3);
+	data += dataClippedWidth * pitch;
 
 	// NOTE: When the bitmap is in REFLECT mode, the XPOS marks the *right* side of the
 	//       bitmap! This makes clipping & etc. MUCH, much easier...!
@@ -1176,17 +1038,13 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 //	uint32_t lbufAddress = 0x1800 + (!in24BPPMode ? startPos * 2 : startPos * 4);
 	uint32_t lbufAddress = 0x1800 + startPos * 2;
 	uint8_t * currentLineBuffer = &tom_ram_8[lbufAddress];
-//uint8_t * lineBufferLowerLimit = &tom_ram_8[0x1800],
-//	* lineBufferUpperLimit = &tom_ram_8[0x1800 + 719];
 
 	// Render.
-
-// Hmm. We check above for 24 BPP mode, but don't do anything about it below...
-// If we *were* in 24 BPP mode, how would you convert CRY to RGB24? Seems to me
-// that if you're in CRY mode then you wouldn't be able to use 24 BPP bitmaps
-// anyway.
-// This seems to be the case (at least according to the Midsummer docs)...!
-
+	// Hmm. We check above for 24 BPP mode, but don't do anything about it below...
+	// If we *were* in 24 BPP mode, how would you convert CRY to RGB24? Seems to me
+	// that if you're in CRY mode then you wouldn't be able to use 24 BPP bitmaps
+	// anyway.
+	// This seems to be the case (at least according to the Midsummer docs)...!
 	if (depth == 0)									// 1 BPP
 	{
 		// The LSB of flags is OPFLAG_REFLECT, so sign extend it and or 2 into it.
@@ -1216,13 +1074,6 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 			currentLineBuffer += lbufDelta;
 
-/*			horizontalRemainder -= 0x20;		// Subtract 1.0f in [3.5] fixed point format
-			while (horizontalRemainder & 0x80)
-			{
-				horizontalRemainder += hscale;
-				pixCount++;
-				pixels <<= 1;
-			}//*/
 			while (horizontalRemainder < 0x20)		// I.e., it's <= 0 (*before* subtraction)
 			{
 				horizontalRemainder += hscale;

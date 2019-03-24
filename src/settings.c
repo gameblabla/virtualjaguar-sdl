@@ -41,8 +41,6 @@ void LoadVJSettings(void)
 	#endif
 	vjs.usePipelinedDSP = false;
 	vjs.fullscreen = false;
-	vjs.useOpenGL = 0;
-	vjs.glFilter = 0;
 
 	vjs.p1KeyBindings[0] = SDLK_UP;
 	vjs.p1KeyBindings[1] = SDLK_DOWN;
@@ -67,7 +65,6 @@ void LoadVJSettings(void)
 	vjs.p1KeyBindings[20] = SDLK_KP_MULTIPLY;
 
 	strcpy(vjs.jagBootPath, "./BIOS/jagboot.rom");
-	strcpy(vjs.CDBootPath, "./BIOS/jagcd.rom");
 	strcpy(vjs.EEPROMPath, "./EEPROMs");
 	strcpy(vjs.ROMPath, "./ROMs");
 	CheckForTrailingSlash(vjs.EEPROMPath);

@@ -23,8 +23,6 @@ struct VJSettings
 	uint8_t DSPEnabled;
 	uint8_t usePipelinedDSP;
 	uint8_t fullscreen;
-	uint8_t useOpenGL;
-	uint32_t glFilter;
 	uint8_t hardwareTypeAlpine;
 
 	// Keybindings in order of U, D, L, R, C, B, A, Op, Pa, 0-9, #, *
@@ -34,7 +32,6 @@ struct VJSettings
 	// Paths
 	char ROMPath[MAX_PATH];
 	char jagBootPath[MAX_PATH];
-	char CDBootPath[MAX_PATH];
 	char EEPROMPath[MAX_PATH];
 
 	// Internal global stuff

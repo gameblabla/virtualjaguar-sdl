@@ -56,7 +56,6 @@ void DACInit(void)
 	desired.freq = GetCalculatedFrequency();		// SDL will do conversion on the fly, if it can't get the exact rate. Nice!
 	desired.format = AUDIO_S16SYS;					// This uses the native endian (for portability)...
 	desired.channels = 2;
-//	desired.samples = 4096;							// Let's try a 4K buffer (can always go lower)
 	desired.samples = 2048;							// Let's try a 2K buffer (can always go lower)
 	desired.callback = SDLSoundCallback;
 
@@ -67,7 +66,6 @@ void DACInit(void)
 
 	DACReset();
 	SDL_PauseAudio(false);							// Start playback!
-	//WriteLog("DAC: Successfully initialized.\n");
 }
 
 //
@@ -86,7 +84,6 @@ void DACDone(void)
 	SDL_PauseAudio(true);
 	SDL_CloseAudio();
 	memory_free(DACBuffer);
-	//WriteLog("DAC: Done.\n");
 }
 
 //
@@ -96,12 +93,9 @@ void DACDone(void)
 //
 void SDLSoundCallback(void * userdata, Uint8 * buffer, int length)
 {
-	// Clear the buffer to silence, in case the DAC buffer is empty (or short)
 	memset(buffer, desired.silence, length);
-////WriteLog("DAC: Inside callback...\n");
 	if (LeftFIFOHeadPtr != LeftFIFOTailPtr)
 	{
-////WriteLog("DAC: About to write some data!\n");
 		int numLeftSamplesReady
 			= (LeftFIFOTailPtr + (LeftFIFOTailPtr < LeftFIFOHeadPtr ? BUFFER_SIZE : 0))
 				- LeftFIFOHeadPtr;
@@ -112,35 +106,14 @@ void SDLSoundCallback(void * userdata, Uint8 * buffer, int length)
 			= (numLeftSamplesReady < numRightSamplesReady
 				? numLeftSamplesReady : numRightSamplesReady);//Hmm. * 2;
 
-//The numbers look good--it's just that the DSP can't get enough samples in the DAC buffer!
-////WriteLog("DAC: Left/RightFIFOHeadPtr: %u/%u, Left/RightFIFOTailPtr: %u/%u\n", LeftFIFOHeadPtr, RightFIFOHeadPtr, LeftFIFOTailPtr, RightFIFOTailPtr);
-////WriteLog("     numLeft/RightSamplesReady: %i/%i, numSamplesReady: %i, length of buffer: %i\n", numLeftSamplesReady, numRightSamplesReady, numSamplesReady, length);
-
-/*		if (numSamplesReady > length)
-			numSamplesReady = length;//*/
 		if (numSamplesReady > length / 2)	// length / 2 because we're comparing 16-bit lengths
 			numSamplesReady = length / 2;
-//else
-//	//WriteLog("     Not enough samples to fill the buffer (short by %u L/R samples)...\n", (length / 2) - numSamplesReady);
-////WriteLog("DAC: %u samples ready.\n", numSamplesReady);
 
-		// Actually, it's a bit more involved than this, but this is the general idea:
-//		memcpy(buffer, DACBuffer, length);
 		for(int i=0; i<numSamplesReady; i++)
 			((uint16_t *)buffer)[i] = DACBuffer[(LeftFIFOHeadPtr + i) % BUFFER_SIZE];
-			// Could also use (as long as BUFFER_SIZE is a multiple of 2):
-//			buffer[i] = DACBuffer[(LeftFIFOHeadPtr + i) & (BUFFER_SIZE - 1)];
-
 		LeftFIFOHeadPtr = (LeftFIFOHeadPtr + numSamplesReady) % BUFFER_SIZE;
 		RightFIFOHeadPtr = (RightFIFOHeadPtr + numSamplesReady) % BUFFER_SIZE;
-		// Could also use (as long as BUFFER_SIZE is a multiple of 2):
-//		LeftFIFOHeadPtr = (LeftFIFOHeadPtr + numSamplesReady) & (BUFFER_SIZE - 1);
-//		RightFIFOHeadPtr = (RightFIFOHeadPtr + numSamplesReady) & (BUFFER_SIZE - 1);
-////WriteLog("  -> Left/RightFIFOHeadPtr: %u/%u, Left/RightFIFOTailPtr: %u/%u\n", LeftFIFOHeadPtr, RightFIFOHeadPtr, LeftFIFOTailPtr, RightFIFOTailPtr);
 	}
-//Hmm. Seems that the SDL buffer isn't being starved by the DAC buffer...
-//	else
-//		//WriteLog("DAC: Silence...!\n");
 }
 
 //
@@ -171,61 +144,32 @@ void DACWriteWord(uint32_t offset, uint16_t data, uint32_t who/*= UNKNOWN*/)
 	who = UNKNOWN;
 	if (offset == LTXD + 2)
 	{
-		// Spin until buffer has been drained (for too fast processors!)...
-//Small problem--if Head == 0 and Tail == buffer end, then this will fail... !!! FIX !!!
-//[DONE]
-		// Also, we're taking advantage of the fact that the buffer is a multiple of two
-		// in this check...
 		while ((LeftFIFOTailPtr + 2) & (BUFFER_SIZE - 1) == LeftFIFOHeadPtr);
 
 		SDL_LockAudio();							// Is it necessary to do this? Mebbe.
-		// We use a circular buffer 'cause it's easy. Note that the callback function
-		// takes care of dumping audio to the soundcard...! Also note that we're writing
-		// the samples in the buffer in an interleaved L/R format.
 		LeftFIFOTailPtr = (LeftFIFOTailPtr + 2) % BUFFER_SIZE;
 		DACBuffer[LeftFIFOTailPtr] = data;
 		SDL_UnlockAudio();
 	}
 	else if (offset == RTXD + 2)
 	{
-		// Spin until buffer has been drained (for too fast processors!)...
-//uint32_t spin = 0;
 		while ((RightFIFOTailPtr + 2) & (BUFFER_SIZE - 1) == RightFIFOHeadPtr);
-/*		{
-spin++;
-if (spin == 0x10000000)
-{
-	//WriteLog("\nStuck in right DAC spinlock! Tail=%u, Head=%u\nAborting!\n", RightFIFOTailPtr, RightFIFOHeadPtr);
-	log_done();
-	exit(0);
-}
-		}*/
+		
 
-//This is wrong		if (RightFIFOTailPtr + 2 != RightFIFOHeadPtr)
-//		{
 		SDL_LockAudio();
 		RightFIFOTailPtr = (RightFIFOTailPtr + 2) % BUFFER_SIZE;
 		DACBuffer[RightFIFOTailPtr] = data;
 		SDL_UnlockAudio();
-//		}
-/*#ifdef DEBUG_DAC
-		else
-			//WriteLog("DAC: Ran into FIFO's right tail pointer!\n");
-#endif*/
 	}
 	else if (offset == SCLK + 2)					// Sample rate
 	{
-		//WriteLog("DAC: Writing %u to SCLK...\n", data);
 		if ((uint8_t)data != SCLKFrequencyDivider)
 		{
 			SCLKFrequencyDivider = (uint8_t)data;
-//Of course a better way would be to query the hardware to find the upper limit...
 			if (data > 7)	// Anything less than 8 is too high!
 			{
 				SDL_CloseAudio();
 				desired.freq = GetCalculatedFrequency();// SDL will do conversion on the fly, if it can't get the exact rate. Nice!
-				//WriteLog("DAC: Changing sample rate to %u Hz!\n", desired.freq);
-
 				if (SDL_OpenAudio(&desired, NULL) < 0)	// NULL means SDL guarantees what we want
 				{
 					exit(1);
@@ -239,11 +183,6 @@ if (spin == 0x10000000)
 	else if (offset == SMODE + 2)
 	{
 		serialMode = data;
-		/*WriteLog("DAC: %s writing to SMODE. Bits: %s%s%s%s%s%s [68K PC=%08X]\n", whoName[who],
-			(data & 0x01 ? "INTERNAL " : ""), (data & 0x02 ? "MODE " : ""),
-			(data & 0x04 ? "WSEN " : ""), (data & 0x08 ? "RISING " : ""),
-			(data & 0x10 ? "FALLING " : ""), (data & 0x20 ? "EVERYWORD" : ""),
-			m68k_get_reg(NULL, M68K_REG_PC));*/
 	}
 }
 
@@ -253,7 +192,6 @@ if (spin == 0x10000000)
 uint8_t DACReadByte(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
 	who = UNKNOWN;
-//	//WriteLog("DAC: %s reading byte from %08X\n", whoName[who], offset);
 	return 0xFF;
 }
 
@@ -261,14 +199,6 @@ uint8_t DACReadByte(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 uint16_t DACReadWord(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
 	who = UNKNOWN;
-//	//WriteLog("DAC: %s reading word from %08X\n", whoName[who], offset);
-//	return 0xFFFF;
-//	//WriteLog("DAC: %s reading WORD %04X from %08X\n", whoName[who], fakeWord, offset);
-//	return fakeWord++;
-//NOTE: This only works if a bunch of things are set in BUTCH which we currently don't
-//      check for. !!! FIX !!!
-// Partially fixed: We check for I2SCNTRL in the JERRY I2S routine...
-//	return GetWordFromButchSSI(offset, who);
 	if (offset == LRXD || offset == RRXD)
 		return 0x0000;
 	else if (offset == LRXD + 2)
