@@ -9,9 +9,7 @@
 #include <sys/types.h>								// For MacOS <dirent.h> dependency
 #include <dirent.h>
 #include <SDL.h>
-#include <string>
-#include <vector>
-#include <algorithm>
+#include <string.h>
 #include <ctype.h>									// For toupper()
 #include "settings.h"
 #include "tom.h"
@@ -37,12 +35,12 @@ extern uint8 * jaguar_mainRam;
 extern uint8 * jaguar_mainRom;
 extern uint8 * jaguar_bootRom;
 extern uint8 * jaguar_CDBootROM;
-extern bool BIOSLoaded;
-extern bool CDBIOSLoaded;
+extern uint8_t BIOSLoaded;
+extern uint8_t CDBIOSLoaded;
 
 // Local global variables
 
-bool exitGUI = false;								// GUI (emulator) done variable
+uint8_t exitGUI = false;								// GUI (emulator) done variable
 int mouseX, mouseY;
 
 //
@@ -61,8 +59,8 @@ void GUIDone(void)
 //
 // GUI main loop
 //
-//bool GUIMain(void)
-bool GUIMain(char * filename)
+//uint8_t GUIMain(void)
+uint8_t GUIMain(char * filename)
 {
 	if (filename)
 	{
@@ -79,8 +77,8 @@ bool GUIMain(char * filename)
 void RunEmu(void)
 {
 	extern int16 * backbuffer;
-	extern bool finished;
-	uint32 nFrame = 0, nFrameskip = 6;
+	extern uint8_t finished;
+	uint32_t nFrame = 0, nFrameskip = 6;
 	finished = false;
 
 	while (true)
@@ -107,11 +105,11 @@ void RunEmu(void)
 //
 // Generic ROM loading
 //
-uint32 JaguarLoadROM(uint8 * rom, char * path)
+uint32_t JaguarLoadROM(uint8 * rom, char * path)
 {
 	// We really should have some kind of sanity checking for the ROM size here to prevent
 	// a buffer overflow... !!! FIX !!!
-	uint32 romSize = 0;
+	uint32_t romSize = 0;
 
 	char * ext = strrchr(path, '.');
 	if (ext != NULL)
@@ -172,7 +170,7 @@ uint32 JaguarLoadROM(uint8 * rom, char * path)
 //
 // Jaguar file loading
 //
-bool JaguarLoadFile(char * path)
+uint8_t JaguarLoadFile(char * path)
 {
 	char * ext = strrchr(path, '.');
 	jaguarRomSize = JaguarLoadROM(jaguar_mainRom, path);
@@ -204,7 +202,7 @@ bool JaguarLoadFile(char * path)
 	{
 		if (jaguar_mainRom[0] == 0x60 && jaguar_mainRom[1] == 0x1B)
 		{
-			uint32 loadAddress = GET32(jaguar_mainRom, 0x16),
+			uint32_t loadAddress = GET32(jaguar_mainRom, 0x16),
 			codeSize = GET32(jaguar_mainRom, 0x02) + GET32(jaguar_mainRom, 0x06);
 
 			if (loadAddress < 0x800000)
@@ -219,7 +217,7 @@ bool JaguarLoadFile(char * path)
 		}
 		else if (jaguar_mainRom[0] == 0x01 && jaguar_mainRom[1] == 0x50)
 		{
-			uint32 loadAddress = GET32(jaguar_mainRom, 0x28), runAddress = GET32(jaguar_mainRom, 0x24),
+			uint32_t loadAddress = GET32(jaguar_mainRom, 0x28), runAddress = GET32(jaguar_mainRom, 0x24),
 				codeSize = GET32(jaguar_mainRom, 0x18) + GET32(jaguar_mainRom, 0x1C);
 			//WriteLog("GUI: Setting up homebrew (ABS-2)... Run address: %08X, length: %08X\n", runAddress, codeSize);
 
@@ -243,7 +241,7 @@ bool JaguarLoadFile(char * path)
 	{
 		if (jaguar_mainRom[0] == 0x60 && jaguar_mainRom[1] == 0x1A)
 		{
-			uint32 loadAddress = GET32(jaguar_mainRom, 0x22), runAddress = GET32(jaguar_mainRom, 0x2A);
+			uint32_t loadAddress = GET32(jaguar_mainRom, 0x22), runAddress = GET32(jaguar_mainRom, 0x2A);
 			//WriteLog("GUI: Setting up homebrew (JAG)... Run address: %08X, length: %08X\n", runAddress, jaguarRomSize - 0x2E);
 			memcpy(jaguar_mainRam + loadAddress, jaguar_mainRom + 0x2E, jaguarRomSize - 0x2E);
 			jaguarRunAddress = runAddress;

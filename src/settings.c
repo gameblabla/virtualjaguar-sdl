@@ -7,14 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cstring>
 #include "SDL.h"
 #include "sdlemu_config.h"
 #include "settings.h"
 
 // Global variables
 
-VJSettings vjs;
+struct VJSettings vjs;
 
 // Private function prototypes
 

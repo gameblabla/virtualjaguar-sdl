@@ -16,20 +16,20 @@
 
 struct VJSettings
 {
-	bool useJoystick;
+	uint8_t useJoystick;
 	int32 joyport;									// Joystick port
-	bool hardwareTypeNTSC;							// Set to false for PAL
-	bool useJaguarBIOS;
-	bool DSPEnabled;
-	bool usePipelinedDSP;
-	bool fullscreen;
-	bool useOpenGL;
-	uint32 glFilter;
-	bool hardwareTypeAlpine;
+	uint8_t hardwareTypeNTSC;							// Set to false for PAL
+	uint8_t useJaguarBIOS;
+	uint8_t DSPEnabled;
+	uint8_t usePipelinedDSP;
+	uint8_t fullscreen;
+	uint8_t useOpenGL;
+	uint32_t glFilter;
+	uint8_t hardwareTypeAlpine;
 
 	// Keybindings in order of U, D, L, R, C, B, A, Op, Pa, 0-9, #, *
-	uint16 p1KeyBindings[21];
-	uint16 p2KeyBindings[21];
+	uint16_t p1KeyBindings[21];
+	uint16_t p2KeyBindings[21];
 
 	// Paths
 	char ROMPath[MAX_PATH];
@@ -38,7 +38,7 @@ struct VJSettings
 	char EEPROMPath[MAX_PATH];
 
 	// Internal global stuff
-//	uint32 ROMType;
+//	uint32_t ROMType;
 };
 
 // ROM Types
@@ -51,6 +51,6 @@ void SaveVJSettings(void);
 
 // Exported variables
 
-extern VJSettings vjs;
+extern struct VJSettings vjs;
 
 #endif	// __SETTINGS_H__

@@ -13,13 +13,13 @@ void DACDone(void);
 
 // DAC memory access
 
-void DACWriteByte(uint32 offset, uint8 data, uint32 who = UNKNOWN);
-void DACWriteWord(uint32 offset, uint16 data, uint32 who = UNKNOWN);
-uint8 DACReadByte(uint32 offset, uint32 who = UNKNOWN);
-uint16 DACReadWord(uint32 offset, uint32 who = UNKNOWN);
+void DACWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void DACWriteWord(uint32_t offset, uint16_t data, uint32_t who);
+uint8 DACReadByte(uint32_t offset, uint32_t who);
+uint16_t DACReadWord(uint32_t offset, uint32_t who);
 
 // Global variables
 
-extern uint16 lrxd, rrxd;							// I2S ports (into Jaguar)
+extern uint16_t lrxd, rrxd;							// I2S ports (into Jaguar)
 
 #endif	// __DAC_H__

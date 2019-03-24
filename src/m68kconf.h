@@ -47,11 +47,7 @@
 #define M68K_COMPILE_FOR_MAME      OPT_OFF
 #endif /* M68K_COMPILE_FOR_MAME */
 
-#if M68K_COMPILE_FOR_MAME == OPT_ON
-#include "m68kmame.h"
-#else
-
-
+#if M68K_COMPILE_FOR_MAME == OPT_OFF
 
 /* ======================================================================== */
 /* ============================= CONFIGURATION ============================ */
@@ -75,17 +71,7 @@
  * If off, all interrupts will be autovectored and all interrupt requests will
  * auto-clear when the interrupt is serviced.
  */
-//#define M68K_EMULATE_INT_ACK        OPT_OFF
-//#define M68K_INT_ACK_CALLBACK(A)    your_int_ack_handler_function(A)
-
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
 int irq_ack_handler(int);
-//#ifdef __cplusplus
-//}
-//#endif
-
 #define M68K_EMULATE_INT_ACK        OPT_SPECIFY_HANDLER
 #define M68K_INT_ACK_CALLBACK(A)    irq_ack_handler(A)
 
@@ -131,9 +117,7 @@ int irq_ack_handler(int);
  * instruction.
  */
 void M68KInstructionHook(void);
-//#define M68K_INSTRUCTION_HOOK       OPT_OFF
 #define M68K_INSTRUCTION_HOOK       OPT_SPECIFY_HANDLER
-//#define M68K_INSTRUCTION_CALLBACK() your_instruction_hook_function()
 #define M68K_INSTRUCTION_CALLBACK() M68KInstructionHook()
 
 

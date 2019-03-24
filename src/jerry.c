@@ -156,24 +156,24 @@ static uint8 * jerry_ram_8;
 
 uint8 analog_x, analog_y;
 
-static uint32 jerry_timer_1_prescaler;
-static uint32 jerry_timer_2_prescaler;
-static uint32 jerry_timer_1_divider;
-static uint32 jerry_timer_2_divider;
+static uint32_t jerry_timer_1_prescaler;
+static uint32_t jerry_timer_2_prescaler;
+static uint32_t jerry_timer_1_divider;
+static uint32_t jerry_timer_2_divider;
 static int32 jerry_timer_1_counter;
 static int32 jerry_timer_2_counter;
 
-static uint32 jerry_i2s_interrupt_divide = 8;
+static uint32_t jerry_i2s_interrupt_divide = 8;
 static int32 jerry_i2s_interrupt_timer = -1;
-uint32 jerryI2SCycles;
-uint32 jerryIntPending;
+uint32_t jerryI2SCycles;
+uint32_t jerryIntPending;
 
 //This approach is probably wrong, since the timer is continuously counting down, though
 //it might only be a problem if the # of interrupts generated is greater than 1--the M68K's
 //timeslice should be running during that phase... (The DSP needs to be aware of this!)
-void jerry_i2s_exec(uint32 cycles)
+void jerry_i2s_exec(uint32_t cycles)
 {
-	extern uint16 serialMode;						// From DAC.CPP
+	extern uint16_t serialMode;						// From DAC.CPP
 	if (serialMode & 0x01)							// INTERNAL flag (JERRY is master)
 	{
 
@@ -262,7 +262,7 @@ void jerry_reset_timer_2(void)
 //		//WriteLog("jerry: reseting timer 2 to 0x%.8x (%i)\n",jerry_timer_2_counter,jerry_timer_2_counter);
 }
 
-void JERRYExecPIT(uint32 cycles)
+void JERRYExecPIT(uint32_t cycles)
 {
 //This is wrong too: Counters are *always* spinning! !!! FIX !!! [DONE]
 //	if (jerry_timer_1_counter)
@@ -334,7 +334,7 @@ void jerry_done(void)
 	eeprom_done();
 }
 
-bool JERRYIRQEnabled(int irq)
+uint8_t JERRYIRQEnabled(int irq)
 {
 	// Read the word @ $F10020 
 	return jerry_ram_8[0x21] & (1 << irq);
@@ -349,8 +349,9 @@ void JERRYSetPendingIRQ(int irq)
 //
 // JERRY byte access (read)
 //
-uint8 JERRYReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint8 JERRYReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 #ifdef JERRY_DEBUG
 	//WriteLog("JERRY: Reading byte at %06X\n", offset);
 #endif
@@ -377,10 +378,10 @@ uint8 JERRYReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
 	else if ((offset >= 0xF10036) && (offset <= 0xF1003D))
 	{
 //		jerry_timer_1_counter = (jerry_timer_1_prescaler + 1) * (jerry_timer_1_divider + 1);
-		uint32 counter1Hi = (jerry_timer_1_counter / (jerry_timer_1_divider + 1)) - 1;
-		uint32 counter1Lo = (jerry_timer_1_counter % (jerry_timer_1_divider + 1)) - 1;
-		uint32 counter2Hi = (jerry_timer_2_counter / (jerry_timer_2_divider + 1)) - 1;
-		uint32 counter2Lo = (jerry_timer_2_counter % (jerry_timer_2_divider + 1)) - 1;
+		uint32_t counter1Hi = (jerry_timer_1_counter / (jerry_timer_1_divider + 1)) - 1;
+		uint32_t counter1Lo = (jerry_timer_1_counter % (jerry_timer_1_divider + 1)) - 1;
+		uint32_t counter2Hi = (jerry_timer_2_counter / (jerry_timer_2_divider + 1)) - 1;
+		uint32_t counter2Lo = (jerry_timer_2_counter % (jerry_timer_2_divider + 1)) - 1;
 
 		switch(offset & 0x0F)
 		{
@@ -425,8 +426,9 @@ uint8 JERRYReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
 //
 // JERRY word access (read)
 //
-uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint16_t JERRYReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 #ifdef JERRY_DEBUG
 	//WriteLog("JERRY: Reading word at %06X\n", offset);
 #endif
@@ -455,10 +457,10 @@ uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 	else if ((offset >= 0xF10036) && (offset <= 0xF1003D))
 	{
 //		jerry_timer_1_counter = (jerry_timer_1_prescaler + 1) * (jerry_timer_1_divider + 1);
-		uint32 counter1Hi = (jerry_timer_1_counter / (jerry_timer_1_divider + 1)) - 1;
-		uint32 counter1Lo = (jerry_timer_1_counter % (jerry_timer_1_divider + 1)) - 1;
-		uint32 counter2Hi = (jerry_timer_2_counter / (jerry_timer_2_divider + 1)) - 1;
-		uint32 counter2Lo = (jerry_timer_2_counter % (jerry_timer_2_divider + 1)) - 1;
+		uint32_t counter1Hi = (jerry_timer_1_counter / (jerry_timer_1_divider + 1)) - 1;
+		uint32_t counter1Lo = (jerry_timer_1_counter % (jerry_timer_1_divider + 1)) - 1;
+		uint32_t counter2Hi = (jerry_timer_2_counter / (jerry_timer_2_divider + 1)) - 1;
+		uint32_t counter2Lo = (jerry_timer_2_counter % (jerry_timer_2_divider + 1)) - 1;
 
 		switch(offset & 0x0F)
 		{
@@ -500,8 +502,9 @@ uint16 JERRYReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
 //
 // JERRY byte access (write)
 //
-void JERRYWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
+void JERRYWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 #ifdef JERRY_DEBUG
 	//WriteLog("jerry: writing byte %.2x at 0x%.6x\n",data,offset);
 #endif
@@ -686,8 +689,9 @@ void JERRYWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 //
 // JERRY word access (write)
 //
-void JERRYWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
+void JERRYWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 #ifdef JERRY_DEBUG
 	//WriteLog( "JERRY: Writing word %04X at %06X\n", data, offset);
 #endif

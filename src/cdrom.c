@@ -119,7 +119,7 @@ $185 - Returns 16-bit value
 // Private function prototypes
 
 static void CDROMBusWrite(uint16);
-static uint16 CDROMBusRead(void);
+static uint16_t CDROMBusRead(void);
 
 #define BUTCH		0x00				// base of Butch=interrupt control register, R/W
 #define DSCNTRL 	BUTCH + 0x04		// DSA control register, R/W
@@ -139,22 +139,22 @@ extern char * whoName[9];
 
 
 static uint8 cdRam[0x100];
-static uint16 cdCmd = 0, cdPtr = 0;
-static bool haveCDGoodness;
-static uint32 min, sec, frm, block;
+static uint16_t cdCmd = 0, cdPtr = 0;
+static uint8_t haveCDGoodness;
+static uint32_t min, sec, frm, block;
 static uint8 cdBuf[2352 + 96];
-static uint32 cdBufPtr = 2352;
+static uint32_t cdBufPtr = 2352;
 //Also need to set up (save/restore) the CD's NVRAM
 
 
-extern bool GetRawTOC(void);
+extern uint8_t GetRawTOC(void);
 void CDROMInit(void)
 {
 	haveCDGoodness = CDIntfInit();
 
 //GetRawTOC();
 /*uint8 buf[2448];
-uint32 sec = 18667 - 150;
+uint32_t sec = 18667 - 150;
 memset(buf, 0, 2448);
 if (!CDIntfReadBlock(sec, buf))
 {
@@ -223,13 +223,13 @@ void CDROMDone(void)
 // interrupts are handled as they're generated--instead of the current
 // scheme where they're handled on scanline boundaries.
 //
-void BUTCHExec(uint32 cycles)
+void BUTCHExec(uint32_t cycles)
 {
 return;
 	extern uint8 * jerry_ram_8;					// Hmm.
 
 	// For now, we just do the FIFO interrupt. Timing is also likely to be WRONG as well.
-	uint32 cdState = GET32(cdRam, BUTCH);
+	uint32_t cdState = GET32(cdRam, BUTCH);
 
 	if (!(cdState & 0x01))						// No BUTCH interrupts enabled
 		return;
@@ -250,8 +250,9 @@ return;
 // CD-ROM memory access functions
 //
 
-uint8 CDROMReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint8 CDROMReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 #ifdef CDROM_LOG
 	if ((offset & 0xFF) < 12 * 4)
 		WriteLog("[%s] ", BReg[(offset & 0xFF) / 4]);
@@ -264,12 +265,13 @@ static uint8 trackNum = 1, minTrack, maxTrack;
 //static uint8 minutes[16] = {  0,  0,  2,  5,  7, 10, 12, 15, 17, 20, 22, 25, 27, 30, 32, 35 };
 //static uint8 seconds[16] = {  0,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0, 30,  0 };
 //static uint8 frames[16]  = {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 };
-//static uint16 sd = 0;
-uint16 CDROMReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
+//static uint16_t sd = 0;
+uint16_t CDROMReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0xFF;
 
-	uint16 data = 0x0000;
+	uint16_t data = 0x0000;
 	
 	if (offset == BUTCH)
 		data = 0x0000;
@@ -372,7 +374,7 @@ TOC: 2 10 00  b 00:00:00 00 54:26:17   <-- Track #11
 				data |= (0x20 | cdPtr++) << 8;
 			}
 
-/*			bool isValidSession = ((cdCmd & 0xFF) == 0 ? true : false);//Hardcoded... !!! FIX !!!
+/*			uint8_t isValidSession = ((cdCmd & 0xFF) == 0 ? true : false);//Hardcoded... !!! FIX !!!
 //NOTE: This should return error condition if the requested session doesn't exist! ($0400?)
 			if (isValidSession)
 			{
@@ -533,8 +535,9 @@ if (offset == 0x2E)
 	return data;
 }
 
-void CDROMWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
+void CDROMWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0xFF;
 	cdRam[offset] = data;
 
@@ -545,8 +548,9 @@ void CDROMWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 #endif
 }
 
-void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
+void CDROMWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0xFF;
 	SET16(cdRam, offset, data);
 
@@ -599,7 +603,7 @@ void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 		else if ((data & 0xFF00) == 0x7000)			// Set oversampling rate
 		{
 			// 1 = none, 2 = 2x, 3 = 4x, 4 = 8x
-			uint32 rates[5] = { 0, 1, 2, 4, 8 };
+			uint32_t rates[5] = { 0, 1, 2, 4, 8 };
 
 		}
 
@@ -622,14 +626,14 @@ void CDROMWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
 
 enum ButchState { ST_INIT, ST_RISING, ST_FALLING };
 static ButchState currentState = ST_INIT;
-static uint16 counter = 0;
-static bool cmdTx = false;
-static uint16 busCmd;
-static uint16 rxData, txData;
-static uint16 rxDataBit;
-static bool firstTime = false;
+static uint16_t counter = 0;
+static uint8_t cmdTx = false;
+static uint16_t busCmd;
+static uint16_t rxData, txData;
+static uint16_t rxDataBit;
+static uint8_t firstTime = false;
 
-static void CDROMBusWrite(uint16 data)
+static void CDROMBusWrite(uint16_t data)
 {
 //This is kinda lame. What we should do is check for a 0->1 transition on either bits 0 or 1...
 //!!! FIX !!!
@@ -714,7 +718,7 @@ static void CDROMBusWrite(uint16 data)
 	}
 }
 
-static uint16 CDROMBusRead(void)
+static uint16_t CDROMBusRead(void)
 {
 // It seems the counter == 0 simply waits for a single bit acknowledge-- !!! FIX !!!
 // Or does it? Hmm. It still "pumps" 16 bits through above, so how is this special?
@@ -745,9 +749,9 @@ static uint16 CDROMBusRead(void)
 //
 //temp, until I can fix my CD image... Argh!
 static uint8 cdBuf2[2532 + 96], cdBuf3[2532 + 96];
-uint16 GetWordFromButchSSI(uint32 offset, uint32 who/*= UNKNOWN*/)
+uint16_t GetWordFromButchSSI(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
-	bool go = ((offset & 0x0F) == 0x0A || (offset & 0x0F) == 0x0E ? true : false);
+	uint8_t go = ((offset & 0x0F) == 0x0A || (offset & 0x0F) == 0x0E ? true : false);
 
 	if (!go)
 		return 0x000;
@@ -783,7 +787,7 @@ uint16 GetWordFromButchSSI(uint32 offset, uint32 who/*= UNKNOWN*/)
 		block++, cdBufPtr = 0;
 	}
 
-/*extern bool doDSPDis;
+/*extern uint8_t doDSPDis;
 if (block == 244968)
 	doDSPDis = true;//*/
 
@@ -798,7 +802,7 @@ if (block == 244968)
 	return (cdBuf[cdBufPtr + 1] << 8) | cdBuf[cdBufPtr + 0];
 }
 
-bool ButchIsReadyToSend(void)
+uint8_t ButchIsReadyToSend(void)
 {
 	return (cdRam[I2CNTRL + 3] & 0x02 ? true : false);
 }
@@ -844,7 +848,7 @@ void SetSSIWordsXmittedFromButch(void)
 
 		block++, cdBufPtr = 0;
 
-/*extern bool doDSPDis;
+/*extern uint8_t doDSPDis;
 static int foo = 0;
 if (block == 244968)
 {

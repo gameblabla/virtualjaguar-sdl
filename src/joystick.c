@@ -39,15 +39,15 @@
 
 static uint8 joystick_ram[4];
 static uint8 joypad_0_buttons[21];
-extern bool finished;
-extern bool showGUI;
-bool GUIKeyHeld = false;
-bool interactiveMode = false;
-bool iLeft, iRight, iToggle = false;
-bool keyHeld1 = false, keyHeld2 = false, keyHeld3 = false;
+extern uint8_t finished;
+extern uint8_t showGUI;
+uint8_t GUIKeyHeld = false;
+uint8_t interactiveMode = false;
+uint8_t iLeft, iRight, iToggle = false;
+uint8_t keyHeld1 = false, keyHeld2 = false, keyHeld3 = false;
 int objectPtr = 0;
-bool startMemLog = false;
-extern bool doDSPDis;
+uint8_t startMemLog = false;
+extern uint8_t doDSPDis;
 
 
 void joystick_init(void)
@@ -57,7 +57,7 @@ void joystick_init(void)
 
 void joystick_exec(void)
 {
-//	extern bool useJoystick;
+//	extern uint8_t useJoystick;
 	uint8 * keystate = SDL_GetKeyState(NULL);
   	
 	memset(joypad_0_buttons, 0, 21);
@@ -161,9 +161,9 @@ void joystick_done(void)
 {
 }
 
-uint8 joystick_byte_read(uint32 offset)
+uint8 joystick_byte_read(uint32_t offset)
 {
-//	extern bool hardwareTypeNTSC;
+//	extern uint8_t hardwareTypeNTSC;
 	offset &= 0x03;
 
 	if (offset == 0)
@@ -232,17 +232,17 @@ uint8 joystick_byte_read(uint32 offset)
 	return joystick_ram[offset];
 }
 
-uint16 joystick_word_read(uint32 offset)
+uint16_t joystick_word_read(uint32_t offset)
 {
 	return ((uint16)joystick_byte_read((offset+0)&0x03) << 8) | joystick_byte_read((offset+1)&0x03);
 }
 
-void joystick_byte_write(uint32 offset, uint8 data)
+void joystick_byte_write(uint32_t offset, uint8 data)
 {
 	joystick_ram[offset&0x03] = data;
 }
 
-void joystick_word_write(uint32 offset, uint16 data)
+void joystick_word_write(uint32_t offset, uint16_t data)
 {
 	offset &= 0x03;
 	joystick_ram[offset+0] = (data >> 8) & 0xFF;

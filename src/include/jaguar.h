@@ -24,7 +24,7 @@
 // Exports from JAGUAR.CPP
 
 extern int32 jaguar_cpu_in_exec;
-extern uint32 jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
+extern uint32_t jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
 extern char * jaguar_eeproms_path;
 extern char * whoName[9];
 
@@ -32,17 +32,17 @@ void jaguar_init(void);
 void jaguar_reset(void);
 void jaguar_done(void);
 
-uint8 JaguarReadByte(uint32 offset, uint32 who = UNKNOWN);
-uint16 JaguarReadWord(uint32 offset, uint32 who = UNKNOWN);
-uint32 JaguarReadLong(uint32 offset, uint32 who = UNKNOWN);
-void JaguarWriteByte(uint32 offset, uint8 data, uint32 who = UNKNOWN);
-void JaguarWriteWord(uint32 offset, uint16 data, uint32 who = UNKNOWN);
-void JaguarWriteLong(uint32 offset, uint32 data, uint32 who = UNKNOWN);
+uint8 JaguarReadByte(uint32_t offset, uint32_t who);
+uint16_t JaguarReadWord(uint32_t offset, uint32_t who);
+uint32_t JaguarReadLong(uint32_t offset, uint32_t who);
+void JaguarWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void JaguarWriteWord(uint32_t offset, uint16_t data, uint32_t who);
+void JaguarWriteLong(uint32_t offset, uint32_t data, uint32_t who);
 
-uint32 jaguar_interrupt_handler_is_valid(uint32 i);
-void jaguar_dasm(uint32 offset, uint32 qt);
+uint32_t jaguar_interrupt_handler_is_valid(uint32_t i);
+void jaguar_dasm(uint32_t offset, uint32_t qt);
 
-void JaguarExecute(int16 * backbuffer, bool render);
+void JaguarExecute(int16 * backbuffer, uint8_t render);
 
 // Some handy macros to help converting native endian to big endian (jaguar native)
 // & vice versa

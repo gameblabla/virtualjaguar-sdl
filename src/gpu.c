@@ -393,6 +393,7 @@ uint8_t GPUReadByte(uint32_t offset, uint32_t who)
 //
 uint16_t GPUReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	if ((offset >= GPU_WORK_RAM_BASE) && (offset < GPU_WORK_RAM_BASE+0x1000))
 	{
 		offset &= 0xFFF;
@@ -426,6 +427,7 @@ uint16_t GPUReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 //
 uint32_t GPUReadLong(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	if (offset >= 0xF02000 && offset <= 0xF020FF)
 	{
 		uint32_t reg = (offset & 0xFC) >> 2;
@@ -486,6 +488,7 @@ uint32_t GPUReadLong(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 //
 void GPUWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	if ((offset >= GPU_WORK_RAM_BASE) && (offset <= GPU_WORK_RAM_BASE + 0x0FFF))
 	{
 		gpu_ram_8[offset & 0xFFF] = data;
@@ -524,6 +527,7 @@ void GPUWriteByte(uint32_t offset, uint8_t data, uint32_t who/*=UNKNOWN*/)
 //
 void GPUWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	if ((offset >= GPU_WORK_RAM_BASE) && (offset <= GPU_WORK_RAM_BASE + 0x0FFE))
 	{
 		gpu_ram_8[offset & 0xFFF] = (data>>8) & 0xFF;
@@ -592,6 +596,7 @@ void GPUWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 //
 void GPUWriteLong(uint32_t offset, uint32_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 //	if ((offset >= GPU_WORK_RAM_BASE) && (offset < GPU_WORK_RAM_BASE + 0x1000))
 	if ((offset >= GPU_WORK_RAM_BASE) && (offset <= GPU_WORK_RAM_BASE + 0x0FFC))
 	{
@@ -607,7 +612,7 @@ void GPUWriteLong(uint32_t offset, uint32_t data, uint32_t who/*=UNKNOWN*/)
 		{
 		case 0x00:
 		{
-			bool IMASKCleared = (gpu_flags & IMASK) && !(data & IMASK);
+			uint8_t IMASKCleared = (gpu_flags & IMASK) && !(data & IMASK);
 			// NOTE: According to the JTRM, writing a 1 to IMASK has no effect; only the
 			//       IRQ logic can set it. So we mask it out here to prevent problems...
 			gpu_flags = data & (~IMASK);

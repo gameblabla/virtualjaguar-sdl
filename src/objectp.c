@@ -36,11 +36,11 @@
 
 // Private function prototypes
 
-void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render);
-void OPProcessScaledBitmap(uint64 p0, uint64 p1, uint64 p2, bool render);
-void DumpScaledObject(uint64 p0, uint64 p1, uint64 p2);
-void DumpFixedObject(uint64 p0, uint64 p1);
-uint64 op_load_phrase(uint32 offset);
+void OPProcessFixedBitmap(uint64_t p0, uint64_t p1, uint8_t render);
+void OPProcessScaledBitmap(uint64_t p0, uint64_t p1, uint64_t p2, uint8_t render);
+void DumpScaledObject(uint64_t p0, uint64_t p1, uint64_t p2);
+void DumpFixedObject(uint64_t p0, uint64_t p1);
+uint64_t op_load_phrase(uint32_t offset);
 
 // Local global variables
 
@@ -50,13 +50,13 @@ static uint8 * op_blend_cr;
 // some of the regular TOM RAM...
 static uint8 objectp_ram[0x40];			// This is based at $F00000
 uint8 objectp_running;
-//bool objectp_stop_reading_list;
+//uint8_t objectp_stop_reading_list;
 
 static uint8 op_bitmap_bit_depth[8] = { 1, 2, 4, 8, 16, 24, 32, 0 };
-//static uint32 op_bitmap_bit_size[8] =
+//static uint32_t op_bitmap_bit_size[8] =
 //	{ (uint32)(0.125*65536), (uint32)(0.25*65536), (uint32)(0.5*65536), (uint32)(1*65536),
 //	  (uint32)(2*65536),     (uint32)(1*65536),    (uint32)(1*65536),   (uint32)(1*65536) };
-static uint32 op_pointer;
+static uint32_t op_pointer;
 
 int32 phraseWidthToPixels[8] = { 64, 32, 16, 8, 4, 2, 0, 0 };
 
@@ -122,18 +122,18 @@ void op_done(void)
 	char * ccType[8] =
 		{ "\"==\"", "\"<\"", "\">\"", "(opflag set)", "(second half line)", "?", "?", "?" };
 
-	uint32 olp = op_get_list_pointer();
+	uint32_t olp = op_get_list_pointer();
 	//WriteLog("OP: OLP = %08X\n", olp);
 	//WriteLog("OP: Phrase dump\n    ----------\n");
-	for(uint32 i=0; i<0x100; i+=8)
+	for(uint32_t i=0; i<0x100; i+=8)
 	{
-		uint32 hi = JaguarReadLong(olp + i, OP), lo = JaguarReadLong(olp + i + 4, OP);
+		uint32_t hi = JaguarReadLong(olp + i, OP), lo = JaguarReadLong(olp + i + 4, OP);
 		//WriteLog("\t%08X: %08X %08X %s", olp + i, hi, lo, opType[lo & 0x07]);
 		if ((lo & 0x07) == 3)
 		{
-			uint16 ypos = (lo >> 3) & 0x7FF;
+			uint16_t ypos = (lo >> 3) & 0x7FF;
 			uint8  cc   = (lo >> 14) & 0x03;
-			uint32 link = ((hi << 11) | (lo >> 21)) & 0x3FFFF8;
+			uint32_t link = ((hi << 11) | (lo >> 21)) & 0x3FFFF8;
 			//WriteLog(" YPOS=%u, CC=%s, link=%08X", ypos, ccType[cc], link);
 		}
 		//WriteLog("\n");
@@ -157,26 +157,30 @@ void op_done(void)
 //	F00026            W   -------- -------x   OBF - object processor flag
 //
 
-uint8 OPReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint8 OPReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0x3F;
 	return objectp_ram[offset];
 }
 
-uint16 OPReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint16_t OPReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0x3F;
 	return GET16(objectp_ram, offset);
 }
 
-void OPWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
+void OPWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0x3F;
 	objectp_ram[offset] = data;
 }
 
-void OPWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
+void OPWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0x3F;
 	SET16(objectp_ram, offset, data);
 
@@ -186,7 +190,7 @@ if (offset == 0x22)
 //WriteLog("OP: Setting hi list pointer: %04X\n", data);//*/
 }
 
-uint32 op_get_list_pointer(void)
+uint32_t op_get_list_pointer(void)
 {
 	// Note: This register is LO / HI WORD, hence the funky look of this...
 //	return (objectp_ram[0x22] << 24) | (objectp_ram[0x23] << 16) | (objectp_ram[0x20] << 8) | objectp_ram[0x21];
@@ -195,7 +199,7 @@ uint32 op_get_list_pointer(void)
 
 // This is WRONG, since the OBF is only 16 bits wide!!! [FIXED]
 
-uint32 op_get_status_register(void)
+uint32_t op_get_status_register(void)
 {
 //	return (objectp_ram[0x26] << 24) | (objectp_ram[0x27] << 16) | (objectp_ram[0x28] << 8) | objectp_ram[0x29];
 //	return GET32(objectp_ram, 0x26);
@@ -204,7 +208,7 @@ uint32 op_get_status_register(void)
 
 // This is WRONG, since the OBF is only 16 bits wide!!! [FIXED]
 
-void op_set_status_register(uint32 data)
+void op_set_status_register(uint32_t data)
 {
 /*	objectp_ram[0x26] = (data & 0xFF000000) >> 24;
 	objectp_ram[0x27] = (data & 0x00FF0000) >> 16;
@@ -214,7 +218,7 @@ void op_set_status_register(uint32 data)
 	objectp_ram[0x27] |= (data & 0xFE);
 }
 
-void op_set_current_object(uint64 object)
+void op_set_current_object(uint64_t object)
 {
 //Not sure this is right... Wouldn't it just be stored 64 bit BE?
 	// Stored as least significant 32 bits first, ms32 last in big endian
@@ -239,13 +243,13 @@ void op_set_current_object(uint64 object)
 	objectp_ram[0x10] = object & 0xFF;
 }
 
-uint64 op_load_phrase(uint32 offset)
+uint64_t op_load_phrase(uint32_t offset)
 {
 	offset &= ~0x07;						// 8 byte alignment
 	return ((uint64)JaguarReadLong(offset, OP) << 32) | (uint64)JaguarReadLong(offset+4, OP);
 }
 
-void OPStorePhrase(uint32 offset, uint64 p)
+void OPStorePhrase(uint32_t offset, uint64_t p)
 {
 	offset &= ~0x07;						// 8 byte alignment
 	JaguarWriteLong(offset, p >> 32, OP);
@@ -255,11 +259,11 @@ void OPStorePhrase(uint32 offset, uint64 p)
 //
 // Debugging routines
 //
-void DumpScaledObject(uint64 p0, uint64 p1, uint64 p2)
+void DumpScaledObject(uint64_t p0, uint64_t p1, uint64_t p2)
 {
 }
 
-void DumpFixedObject(uint64 p0, uint64 p1)
+void DumpFixedObject(uint64_t p0, uint64_t p1)
 {
 }
 
@@ -268,7 +272,7 @@ void DumpFixedObject(uint64 p0, uint64 p1)
 //
 //Need to fix this so that when an GPU object IRQ happens, we can pick up OP processing
 //where we left off. !!! FIX !!!
-void OPProcessList(int scanline, bool render)
+void OPProcessList(int scanline, uint8_t render)
 {
 //	char * condition_to_str[8] =
 //		{ "==", "<", ">", "(opflag set)", "(second half line)", "?", "?", "?" };
@@ -281,14 +285,14 @@ void OPProcessList(int scanline, bool render)
 //op_done();
 
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
-extern bool interactiveMode;
-extern bool iToggle;
+extern uint8_t interactiveMode;
+extern uint8_t iToggle;
 extern int objectPtr;
-bool inhibit;
+uint8_t inhibit;
 int bitmapCounter = 0;
 // *** END OP PROCESSOR TESTING ONLY ***
 
-	uint32 opCyclesToRun = 10000;					// This is a pulled-out-of-the-air value (will need to be fixed, obviously!)
+	uint32_t opCyclesToRun = 10000;					// This is a pulled-out-of-the-air value (will need to be fixed, obviously!)
 
 //	if (op_pointer) //WriteLog(" new op list at 0x%.8x scanline %i\n",op_pointer,scanline);
 	while (op_pointer)
@@ -302,7 +306,7 @@ else
 //		if (objectp_stop_reading_list)
 //			return;
 			
-		uint64 p0 = op_load_phrase(op_pointer);
+		uint64_t p0 = op_load_phrase(op_pointer);
 ////WriteLog("\t%08X type %i\n", op_pointer, (uint8)p0 & 0x07);
 		op_pointer += 8;
 
@@ -310,8 +314,8 @@ else
 		{
 		case OBJECT_TYPE_BITMAP:
 		{
-//WAS:			uint16 ypos = (p0 >> 3) & 0x3FF;
-			uint16 ypos = (p0 >> 3) & 0x7FF;
+//WAS:			uint16_t ypos = (p0 >> 3) & 0x3FF;
+			uint16_t ypos = (p0 >> 3) & 0x7FF;
 // This is only theory implied by Rayman...!
 // It seems that if the YPOS is zero, then bump the YPOS value so that it coincides with
 // the VDB value. With interlacing, this would be slightly more tricky.
@@ -323,8 +327,8 @@ else
 //less than VDB will get written to the top line of the display!
 //			if (ypos == 0)
 //				ypos = TOMReadWord(0xF00046, OP) / 2;			// Get the VDB value
-			uint32 height = (p0 & 0xFFC000) >> 14;
-			uint32 oldOPP = op_pointer - 8;
+			uint32_t height = (p0 & 0xFFC000) >> 14;
+			uint32_t oldOPP = op_pointer - 8;
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
 
 bitmapCounter++;
@@ -332,7 +336,7 @@ if (!inhibit)	// For OP testing only!
 // *** END OP PROCESSOR TESTING ONLY ***
 			if (scanline >= ypos && height > 0)
 			{
-				uint64 p1 = op_load_phrase(op_pointer);
+				uint64_t p1 = op_load_phrase(op_pointer);
 				op_pointer += 8;
 ////WriteLog("OP: Writing scanline %d with ypos == %d...\n", scanline, ypos);
 ////WriteLog("--> Writing %u BPP bitmap...\n", op_bitmap_bit_depth[(p1 >> 12) & 0x07]);
@@ -343,19 +347,19 @@ if (!inhibit)	// For OP testing only!
 
 //???Does this really happen??? Doesn't seem to work if you do this...!
 //Probably not. Must be a bug in the documentation...!
-//				uint32 link = (p0 & 0x7FFFF000000) >> 21;
+//				uint32_t link = (p0 & 0x7FFFF000000) >> 21;
 //				SET16(objectp_ram, 0x20, link & 0xFFFF);	// OLP
 //				SET16(objectp_ram, 0x22, link >> 16);
-/*				uint32 height = (p0 & 0xFFC000) >> 14;
+/*				uint32_t height = (p0 & 0xFFC000) >> 14;
 				if (height - 1 > 0)
 					height--;*/
 				// NOTE: Would subtract 2 if in interlaced mode...!
-//				uint64 height = ((p0 & 0xFFC000) - 0x4000) & 0xFFC000;
+//				uint64_t height = ((p0 & 0xFFC000) - 0x4000) & 0xFFC000;
 //				if (height)
 				height--;
 
-				uint64 data = (p0 & 0xFFFFF80000000000LL) >> 40;
-				uint64 dwidth = (p1 & 0xFFC0000) >> 15;
+				uint64_t data = (p0 & 0xFFFFF80000000000LL) >> 40;
+				uint64_t dwidth = (p1 & 0xFFC0000) >> 15;
 				data += dwidth;
 
 				p0 &= ~0xFFFFF80000FFC000LL;		// Mask out old data...
@@ -377,10 +381,10 @@ if (!inhibit)	// For OP testing only!
 		}
 		case OBJECT_TYPE_SCALE:
 		{
-//WAS:			uint16 ypos = (p0 >> 3) & 0x3FF;
-			uint16 ypos = (p0 >> 3) & 0x7FF;
-			uint32 height = (p0 & 0xFFC000) >> 14;
-			uint32 oldOPP = op_pointer - 8;
+//WAS:			uint16_t ypos = (p0 >> 3) & 0x3FF;
+			uint16_t ypos = (p0 >> 3) & 0x7FF;
+			uint32_t height = (p0 & 0xFFC000) >> 14;
+			uint32_t oldOPP = op_pointer - 8;
 // *** BEGIN OP PROCESSOR TESTING ONLY ***
 
 bitmapCounter++;
@@ -388,9 +392,9 @@ if (!inhibit)	// For OP testing only!
 // *** END OP PROCESSOR TESTING ONLY ***
 			if (scanline >= ypos && height > 0)
 			{
-				uint64 p1 = op_load_phrase(op_pointer);
+				uint64_t p1 = op_load_phrase(op_pointer);
 				op_pointer += 8;
-				uint64 p2 = op_load_phrase(op_pointer);
+				uint64_t p2 = op_load_phrase(op_pointer);
 				op_pointer += 8;
 ////WriteLog("OP: %08X (%d) %08X%08X %08X%08X %08X%08X\n", oldOPP, scanline, (uint32)(p0>>32), (uint32)(p0&0xFFFFFFFF), (uint32)(p1>>32), (uint32)(p1&0xFFFFFFFF), (uint32)(p2>>32), (uint32)(p2&0xFFFFFFFF));
 				OPProcessScaledBitmap(p0, p1, p2, render);
@@ -455,8 +459,8 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 //				if ((remainder >= 0xE1 && remainder <= 0xFF) || remainder == 0)// I.e., it's <= 0
 				if (remainder < 0x20)				// I.e., it's <= 0
 				{
-					uint64 data = (p0 & 0xFFFFF80000000000LL) >> 40;
-					uint64 dwidth = (p1 & 0xFFC0000) >> 15;
+					uint64_t data = (p0 & 0xFFFFF80000000000LL) >> 40;
+					uint64_t dwidth = (p1 & 0xFFC0000) >> 15;
 
 //					while (remainder & 0x80)
 //					while ((remainder & 0x80) || remainder == 0)
@@ -511,9 +515,9 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 		}
 		case OBJECT_TYPE_BRANCH:
 		{
-			uint16 ypos = (p0 >> 3) & 0x7FF;
+			uint16_t ypos = (p0 >> 3) & 0x7FF;
 			uint8  cc   = (p0 >> 14) & 0x03;
-			uint32 link = (p0 >> 21) & 0x3FFFF8;
+			uint32_t link = (p0 >> 21) & 0x3FFFF8;
 			
 //			if ((ypos!=507)&&(ypos!=25))
 //				//WriteLog("\t%i%s%i link=0x%.8x\n",scanline,condition_to_str[cc],ypos>>1,link);
@@ -582,14 +586,14 @@ OP: Scaled bitmap 4x? 4bpp at 34,? hscale=80 fpix=0 data=000756E8 pitch 1 hflipp
 //
 // Store fixed size bitmap in line buffer
 //
-void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
+void OPProcessFixedBitmap(uint64_t p0, uint64_t p1, uint8_t render)
 {
 // Need to make sure that when writing that it stays within the line buffer...
 // LBUF ($F01800 - $F01D9E) 360 x 32-bit RAM
 	uint8 depth = (p1 >> 12) & 0x07;				// Color depth of image
 	int32 xpos = ((int16)((p1 << 4) & 0xFFFF)) >> 4;// Image xpos in LBUF
-	uint32 iwidth = (p1 >> 28) & 0x3FF;				// Image width in *phrases*
-	uint32 data = (p0 >> 40) & 0xFFFFF8;			// Pixel data address
+	uint32_t iwidth = (p1 >> 28) & 0x3FF;				// Image width in *phrases*
+	uint32_t data = (p0 >> 40) & 0xFFFFF8;			// Pixel data address
 //#ifdef OP_DEBUG_BMP
 	uint32	firstPix = (p1 >> 49) & 0x3F;
 	// "The LSB is significant only for scaled objects..." -JTRM
@@ -600,13 +604,13 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 //	uint8 flags = (p1 >> 45) & 0x0F;	// REFLECT, RMW, TRANS, RELEASE
 //Optimize: break these out to their own BOOL values
 	uint8 flags = (p1 >> 45) & 0x07;				// REFLECT (0), RMW (1), TRANS (2)
-	bool flagREFLECT = (flags & OPFLAG_REFLECT ? true : false),
+	uint8_t flagREFLECT = (flags & OPFLAG_REFLECT ? true : false),
 		flagRMW = (flags & OPFLAG_RMW ? true : false),
 		flagTRANS = (flags & OPFLAG_TRANS ? true : false);
 // "For images with 1 to 4 bits/pixel the top 7 to 4 bits of the index
 //  provide the most significant bits of the palette address."
 	uint8 index = (p1 >> 37) & 0xFE;				// CLUT index offset (upper pix, 1-4 bpp)
-	uint32 pitch = (p1 >> 15) & 0x07;				// Phrase pitch
+	uint32_t pitch = (p1 >> 15) & 0x07;				// Phrase pitch
 	pitch <<= 3;									// Optimization: Multiply pitch by 8
 
 //	int16 scanlineWidth = tom_getVideoModeWidth();
@@ -614,7 +618,7 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 	uint8 * paletteRAM = &tom_ram_8[0x400];
 	// This is OK as long as it's used correctly: For 16-bit RAM to RAM direct copies--NOT
 	// for use when using endian-corrected data (i.e., any of the *_word_read functions!)
-	uint16 * paletteRAM16 = (uint16 *)paletteRAM;
+	uint16_t * paletteRAM16 = (uint16_t *)paletteRAM;
 
 //	//WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
 //		iwidth, op_bitmap_bit_depth[bitdepth], xpos, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), (flags&OPFLAG_RMW ? "yes" : "no"), (flags&OPFLAG_TRANS ? "yes" : "no"));
@@ -637,8 +641,8 @@ void OPProcessFixedBitmap(uint64 p0, uint64 p1, bool render)
 	int32 startPos = xpos, endPos = xpos +
 		(!flagREFLECT ? (phraseWidthToPixels[depth] * iwidth) - 1
 		: -((phraseWidthToPixels[depth] * iwidth) + 1));
-	uint32 clippedWidth = 0, phraseClippedWidth = 0, dataClippedWidth = 0;//, phrasePixel = 0;
-	bool in24BPPMode = (((GET16(tom_ram_8, 0x0028) >> 1) & 0x03) == 1 ? true : false);	// VMODE
+	uint32_t clippedWidth = 0, phraseClippedWidth = 0, dataClippedWidth = 0;//, phrasePixel = 0;
+	uint8_t in24BPPMode = (((GET16(tom_ram_8, 0x0028) >> 1) & 0x03) == 1 ? true : false);	// VMODE
 	// Not sure if this is Jaguar Two only location or what...
 	// From the docs, it is... If we want to limit here we should think of something else.
 //	int32 limit = GET16(tom_ram_8, 0x0008);			// LIMIT
@@ -732,10 +736,10 @@ if (depth > 5)
 
 	// NOTE: When the bitmap is in REFLECT mode, the XPOS marks the *right* side of the
 	//       bitmap! This makes clipping & etc. MUCH, much easier...!
-//	uint32 lbufAddress = 0x1800 + (!in24BPPMode ? leftMargin * 2 : leftMargin * 4);
+//	uint32_t lbufAddress = 0x1800 + (!in24BPPMode ? leftMargin * 2 : leftMargin * 4);
 //Why does this work right when multiplying startPos by 2 (instead of 4) for 24 BPP mode?
 //Is this a bug in the OP?
-	uint32 lbufAddress = 0x1800 + (!in24BPPMode ? startPos * 2 : startPos * 2);
+	uint32_t lbufAddress = 0x1800 + (!in24BPPMode ? startPos * 2 : startPos * 2);
 	uint8 * currentLineBuffer = &tom_ram_8[lbufAddress];
 
 	// Render.
@@ -752,7 +756,7 @@ if (depth > 5)
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		// Fetch 1st phrase...
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 //Note that firstPix should only be honored *if* we start with the 1st phrase of the bitmap
 //i.e., we didn't clip on the margin... !!! FIX !!!
 		pixels <<= firstPix;						// Skip first N pixels (N=firstPix)...
@@ -772,7 +776,7 @@ if (depth > 5)
 //Won't optimize RMW case though...
 						// This is the *only* correct use of endian-dependent code
 						// (i.e., mem-to-mem direct copying)!
-						*(uint16 *)currentLineBuffer = paletteRAM16[index | bit];
+						*(uint16_t *)currentLineBuffer = paletteRAM16[index | bit];
 					else
 						*currentLineBuffer = 
 							BLEND_CR(*currentLineBuffer, paletteRAM[(index | bit) << 1]),
@@ -798,14 +802,14 @@ if (depth > 5)
 		while (iwidth--)
 		{
 			// Fetch phrase...
-			uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+			uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 			data += pitch;
 
 			for(int i=0; i<32; i++)
 			{
 				uint8 bits = pixels >> 62;
 // Seems to me that both of these are in the same endian, so we could cast it as
-// uint16 * and do straight across copies (what about 24 bpp? Treat it differently...)
+// uint16_t * and do straight across copies (what about 24 bpp? Treat it differently...)
 // This only works for the palettized modes (1 - 8 BPP), since we actually have to
 // copy data from memory in 16 BPP mode (or does it? Isn't this the same as the CLUT case?)
 // No, it isn't because we read the memory in an endian safe way--this *won't* work...
@@ -814,7 +818,7 @@ if (depth > 5)
 				else
 				{
 					if (!flagRMW)
-						*(uint16 *)currentLineBuffer = paletteRAM16[index | bits];
+						*(uint16_t *)currentLineBuffer = paletteRAM16[index | bits];
 					else
 						*currentLineBuffer = 
 							BLEND_CR(*currentLineBuffer, paletteRAM[(index | bits) << 1]),
@@ -836,14 +840,14 @@ if (depth > 5)
 		while (iwidth--)
 		{
 			// Fetch phrase...
-			uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+			uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 			data += pitch;
 
 			for(int i=0; i<16; i++)
 			{
 				uint8 bits = pixels >> 60;
 // Seems to me that both of these are in the same endian, so we could cast it as
-// uint16 * and do straight across copies (what about 24 bpp? Treat it differently...)
+// uint16_t * and do straight across copies (what about 24 bpp? Treat it differently...)
 // This only works for the palettized modes (1 - 8 BPP), since we actually have to
 // copy data from memory in 16 BPP mode (or does it? Isn't this the same as the CLUT case?)
 // No, it isn't because we read the memory in an endian safe way--this *won't* work...
@@ -852,7 +856,7 @@ if (depth > 5)
 				else
 				{
 					if (!flagRMW)
-						*(uint16 *)currentLineBuffer = paletteRAM16[index | bits];
+						*(uint16_t *)currentLineBuffer = paletteRAM16[index | bits];
 					else
 						*currentLineBuffer = 
 							BLEND_CR(*currentLineBuffer, paletteRAM[(index | bits) << 1]),
@@ -871,7 +875,7 @@ if (depth > 5)
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		// Fetch 1st phrase...
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 //Note that firstPix should only be honored *if* we start with the 1st phrase of the bitmap
 //i.e., we didn't clip on the margin... !!! FIX !!!
 		firstPix &= 0x30;							// Only top two bits are valid for 8 BPP
@@ -884,7 +888,7 @@ if (depth > 5)
 			{
 				uint8 bits = pixels >> 56;
 // Seems to me that both of these are in the same endian, so we could cast it as
-// uint16 * and do straight across copies (what about 24 bpp? Treat it differently...)
+// uint16_t * and do straight across copies (what about 24 bpp? Treat it differently...)
 // This only works for the palettized modes (1 - 8 BPP), since we actually have to
 // copy data from memory in 16 BPP mode (or does it? Isn't this the same as the CLUT case?)
 // No, it isn't because we read the memory in an endian safe way--this *won't* work...
@@ -893,7 +897,7 @@ if (depth > 5)
 				else
 				{
 					if (!flagRMW)
-						*(uint16 *)currentLineBuffer = paletteRAM16[bits];
+						*(uint16_t *)currentLineBuffer = paletteRAM16[bits];
 					else
 						*currentLineBuffer = 
 							BLEND_CR(*currentLineBuffer, paletteRAM[bits << 1]),
@@ -918,14 +922,14 @@ if (depth > 5)
 		while (iwidth--)
 		{
 			// Fetch phrase...
-			uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+			uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 			data += pitch;
 
 			for(int i=0; i<4; i++)
 			{
 				uint8 bitsHi = pixels >> 56, bitsLo = pixels >> 48;
 // Seems to me that both of these are in the same endian, so we could cast it as
-// uint16 * and do straight across copies (what about 24 bpp? Treat it differently...)
+// uint16_t * and do straight across copies (what about 24 bpp? Treat it differently...)
 // This only works for the palettized modes (1 - 8 BPP), since we actually have to
 // copy data from memory in 16 BPP mode (or does it? Isn't this the same as the CLUT case?)
 // No, it isn't because we read the memory in an endian safe way--it *won't* work...
@@ -960,7 +964,7 @@ if (depth > 5)
 		while (iwidth--)
 		{
 			// Fetch phrase...
-			uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+			uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 			data += pitch;
 
 			for(int i=0; i<2; i++)
@@ -987,35 +991,35 @@ if (depth > 5)
 //
 // Store scaled bitmap in line buffer
 //
-void OPProcessScaledBitmap(uint64 p0, uint64 p1, uint64 p2, bool render)
+void OPProcessScaledBitmap(uint64_t p0, uint64_t p1, uint64_t p2, uint8_t render)
 {
 // Need to make sure that when writing that it stays within the line buffer...
 // LBUF ($F01800 - $F01D9E) 360 x 32-bit RAM
 	uint8 depth = (p1 >> 12) & 0x07;				// Color depth of image
 	int32 xpos = ((int16)((p1 << 4) & 0xFFFF)) >> 4;// Image xpos in LBUF
-	uint32 iwidth = (p1 >> 28) & 0x3FF;				// Image width in *phrases*
-	uint32 data = (p0 >> 40) & 0xFFFFF8;			// Pixel data address
+	uint32_t iwidth = (p1 >> 28) & 0x3FF;				// Image width in *phrases*
+	uint32_t data = (p0 >> 40) & 0xFFFFF8;			// Pixel data address
 //#ifdef OP_DEBUG_BMP
 // Prolly should use this... Though not sure exactly how.
 //Use the upper bits as an offset into the phrase depending on the BPP. That's how!
-	uint32 firstPix = (p1 >> 49) & 0x3F;
+	uint32_t firstPix = (p1 >> 49) & 0x3F;
 //This is WEIRD! I'm sure I saw Atari Karts request 8 BPP FIRSTPIX! What happened???
 //#endif
 // We can ignore the RELEASE (high order) bit for now--probably forever...!
 //	uint8 flags = (p1 >> 45) & 0x0F;	// REFLECT, RMW, TRANS, RELEASE
 //Optimize: break these out to their own BOOL values [DONE]
 	uint8 flags = (p1 >> 45) & 0x07;				// REFLECT (0), RMW (1), TRANS (2)
-	bool flagREFLECT = (flags & OPFLAG_REFLECT ? true : false),
+	uint8_t flagREFLECT = (flags & OPFLAG_REFLECT ? true : false),
 		flagRMW = (flags & OPFLAG_RMW ? true : false),
 		flagTRANS = (flags & OPFLAG_TRANS ? true : false);
 	uint8 index = (p1 >> 37) & 0xFE;				// CLUT index offset (upper pix, 1-4 bpp)
-	uint32 pitch = (p1 >> 15) & 0x07;				// Phrase pitch
+	uint32_t pitch = (p1 >> 15) & 0x07;				// Phrase pitch
 
 	uint8 * tom_ram_8 = tom_get_ram_pointer();
 	uint8 * paletteRAM = &tom_ram_8[0x400];
 	// This is OK as long as it's used correctly: For 16-bit RAM to RAM direct copies--NOT
 	// for use when using endian-corrected data (i.e., any of the *ReadWord functions!)
-	uint16 * paletteRAM16 = (uint16 *)paletteRAM;
+	uint16_t * paletteRAM16 = (uint16_t *)paletteRAM;
 
 	uint8 hscale = p2 & 0xFF;
 // Hmm. It seems that fixing the horizontal scale necessitated re-fixing this. Not sure why,
@@ -1023,7 +1027,7 @@ void OPProcessScaledBitmap(uint64 p0, uint64 p1, uint64 p2, bool render)
 	uint8 horizontalRemainder = hscale;				// Not sure if it starts full, but seems reasonable [It's not!]
 //	uint8 horizontalRemainder = 0;					// Let's try zero! Seems to work! Yay! [No, it doesn't!]
 	int32 scaledWidthInPixels = (iwidth * phraseWidthToPixels[depth] * hscale) >> 5;
-	uint32 scaledPhrasePixels = (phraseWidthToPixels[depth] * hscale) >> 5;
+	uint32_t scaledPhrasePixels = (phraseWidthToPixels[depth] * hscale) >> 5;
 
 //	//WriteLog("bitmap %ix? %ibpp at %i,? firstpix=? data=0x%.8x pitch %i hflipped=%s dwidth=? (linked to ?) RMW=%s Tranparent=%s\n",
 //		iwidth, op_bitmap_bit_depth[bitdepth], xpos, ptr, pitch, (flags&OPFLAG_REFLECT ? "yes" : "no"), (flags&OPFLAG_RMW ? "yes" : "no"), (flags&OPFLAG_TRANS ? "yes" : "no"));
@@ -1044,8 +1048,8 @@ if (start_logging)
 
 	int32 startPos = xpos, endPos = xpos +
 		(!flagREFLECT ? scaledWidthInPixels - 1 : -(scaledWidthInPixels + 1));
-	uint32 clippedWidth = 0, phraseClippedWidth = 0, dataClippedWidth = 0;
-	bool in24BPPMode = (((GET16(tom_ram_8, 0x0028) >> 1) & 0x03) == 1 ? true : false);	// VMODE
+	uint32_t clippedWidth = 0, phraseClippedWidth = 0, dataClippedWidth = 0;
+	uint8_t in24BPPMode = (((GET16(tom_ram_8, 0x0028) >> 1) & 0x03) == 1 ? true : false);	// VMODE
 	// Not sure if this is Jaguar Two only location or what...
 	// From the docs, it is... If we want to limit here we should think of something else.
 //	int32 limit = GET16(tom_ram_8, 0x0008);			// LIMIT
@@ -1132,7 +1136,7 @@ if (start_logging)
 // start position (14 * 27.75), we get -6.5... NOT -17!
 
 //Now it seems we're working OK, at least for the first case...
-uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
+uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 	if (startPos < 0)			// Case #1: Begin out, end in, L to R
 {
@@ -1168,9 +1172,9 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 	// NOTE: When the bitmap is in REFLECT mode, the XPOS marks the *right* side of the
 	//       bitmap! This makes clipping & etc. MUCH, much easier...!
-//	uint32 lbufAddress = 0x1800 + (!in24BPPMode ? leftMargin * 2 : leftMargin * 4);
-//	uint32 lbufAddress = 0x1800 + (!in24BPPMode ? startPos * 2 : startPos * 4);
-	uint32 lbufAddress = 0x1800 + startPos * 2;
+//	uint32_t lbufAddress = 0x1800 + (!in24BPPMode ? leftMargin * 2 : leftMargin * 4);
+//	uint32_t lbufAddress = 0x1800 + (!in24BPPMode ? startPos * 2 : startPos * 4);
+	uint32_t lbufAddress = 0x1800 + startPos * 2;
 	uint8 * currentLineBuffer = &tom_ram_8[lbufAddress];
 //uint8 * lineBufferLowerLimit = &tom_ram_8[0x1800],
 //	* lineBufferUpperLimit = &tom_ram_8[0x1800 + 719];
@@ -1189,7 +1193,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		int pixCount = 0;
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 
 		while ((int32)iwidth > 0)
 		{
@@ -1202,7 +1206,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				if (!flagRMW)
 					// This is the *only* correct use of endian-dependent code
 					// (i.e., mem-to-mem direct copying)!
-					*(uint16 *)currentLineBuffer = paletteRAM16[index | bits];
+					*(uint16_t *)currentLineBuffer = paletteRAM16[index | bits];
 				else
 					*currentLineBuffer = 
 						BLEND_CR(*currentLineBuffer, paletteRAM[(index | bits) << 1]),
@@ -1246,7 +1250,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		int pixCount = 0;
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 
 		while ((int32)iwidth > 0)
 		{
@@ -1259,7 +1263,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				if (!flagRMW)
 					// This is the *only* correct use of endian-dependent code
 					// (i.e., mem-to-mem direct copying)!
-					*(uint16 *)currentLineBuffer = paletteRAM16[index | bits];
+					*(uint16_t *)currentLineBuffer = paletteRAM16[index | bits];
 				else
 					*currentLineBuffer = 
 						BLEND_CR(*currentLineBuffer, paletteRAM[(index | bits) << 1]),
@@ -1303,7 +1307,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		int pixCount = 0;
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 
 		while ((int32)iwidth > 0)
 		{
@@ -1316,7 +1320,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				if (!flagRMW)
 					// This is the *only* correct use of endian-dependent code
 					// (i.e., mem-to-mem direct copying)!
-					*(uint16 *)currentLineBuffer = paletteRAM16[index | bits];
+					*(uint16_t *)currentLineBuffer = paletteRAM16[index | bits];
 				else
 					*currentLineBuffer = 
 						BLEND_CR(*currentLineBuffer, paletteRAM[(index | bits) << 1]),
@@ -1359,7 +1363,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		int pixCount = 0;
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 
 		while ((int32)iwidth > 0)
 		{
@@ -1372,10 +1376,10 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				if (!flagRMW)
 					// This is the *only* correct use of endian-dependent code
 					// (i.e., mem-to-mem direct copying)!
-					*(uint16 *)currentLineBuffer = paletteRAM16[bits];
+					*(uint16_t *)currentLineBuffer = paletteRAM16[bits];
 /*				{
 					if (currentLineBuffer >= lineBufferLowerLimit && currentLineBuffer <= lineBufferUpperLimit)
-						*(uint16 *)currentLineBuffer = paletteRAM16[bits];
+						*(uint16_t *)currentLineBuffer = paletteRAM16[bits];
 				}*/
 				else
 					*currentLineBuffer = 
@@ -1412,7 +1416,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		int32 lbufDelta = ((int8)((flags << 7) & 0xFF) >> 5) | 0x02;
 
 		int pixCount = 0;
-		uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+		uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 
 		while ((int32)iwidth > 0)
 		{
@@ -1472,7 +1476,7 @@ uint32 scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 		while (iwidth--)
 		{
 			// Fetch phrase...
-			uint64 pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
+			uint64_t pixels = ((uint64)JaguarReadLong(data, OP) << 32) | JaguarReadLong(data + 4, OP);
 			data += pitch << 3;						// Multiply pitch * 8 (optimize: precompute this value)
 
 			for(int i=0; i<2; i++)

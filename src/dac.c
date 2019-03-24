@@ -27,19 +27,19 @@
 
 // Global variables
 
-uint16 lrxd, rrxd;									// I2S ports (into Jaguar)
+uint16_t lrxd, rrxd;									// I2S ports (into Jaguar)
 
 // Local variables
 
-uint32 LeftFIFOHeadPtr, LeftFIFOTailPtr, RightFIFOHeadPtr, RightFIFOTailPtr;
+uint32_t LeftFIFOHeadPtr, LeftFIFOTailPtr, RightFIFOHeadPtr, RightFIFOTailPtr;
 SDL_AudioSpec desired;
 
 // We can get away with using native endian here because we can tell SDL to use the native
 // endian when looking at the sample buffer, i.e., no need to worry about it.
 
-uint16 * DACBuffer;
+uint16_t * DACBuffer;
 uint8 SCLKFrequencyDivider = 19;						// Default is roughly 22 KHz (20774 Hz in NTSC mode)
-uint16 serialMode = 0;
+uint16_t serialMode = 0;
 
 // Private function prototypes
 
@@ -127,7 +127,7 @@ void SDLSoundCallback(void * userdata, Uint8 * buffer, int length)
 		// Actually, it's a bit more involved than this, but this is the general idea:
 //		memcpy(buffer, DACBuffer, length);
 		for(int i=0; i<numSamplesReady; i++)
-			((uint16 *)buffer)[i] = DACBuffer[(LeftFIFOHeadPtr + i) % BUFFER_SIZE];
+			((uint16_t *)buffer)[i] = DACBuffer[(LeftFIFOHeadPtr + i) % BUFFER_SIZE];
 			// Could also use (as long as BUFFER_SIZE is a multiple of 2):
 //			buffer[i] = DACBuffer[(LeftFIFOHeadPtr + i) & (BUFFER_SIZE - 1)];
 
@@ -158,15 +158,17 @@ int GetCalculatedFrequency(void)
 //
 // LTXD/RTXD/SCLK/SMODE ($F1A148/4C/50/54)
 //
-void DACWriteByte(uint32 offset, uint8 data, uint32 who/*= UNKNOWN*/)
+void DACWriteByte(uint32_t offset, uint8 data, uint32_t who/*= UNKNOWN*/)
 {
+	who = UNKNOWN;
 	//WriteLog("DAC: %s writing BYTE %02X at %08X\n", whoName[who], data, offset);
 	if (offset == SCLK + 3)
-		DACWriteWord(offset - 3, (uint16)data);
+		DACWriteWord(offset - 3, (uint16)data, UNKNOWN);
 }
 
-void DACWriteWord(uint32 offset, uint16 data, uint32 who/*= UNKNOWN*/)
+void DACWriteWord(uint32_t offset, uint16_t data, uint32_t who/*= UNKNOWN*/)
 {
+	who = UNKNOWN;
 	if (offset == LTXD + 2)
 	{
 		// Spin until buffer has been drained (for too fast processors!)...
@@ -187,7 +189,7 @@ void DACWriteWord(uint32 offset, uint16 data, uint32 who/*= UNKNOWN*/)
 	else if (offset == RTXD + 2)
 	{
 		// Spin until buffer has been drained (for too fast processors!)...
-//uint32 spin = 0;
+//uint32_t spin = 0;
 		while ((RightFIFOTailPtr + 2) & (BUFFER_SIZE - 1) == RightFIFOHeadPtr);
 /*		{
 spin++;
@@ -248,15 +250,17 @@ if (spin == 0x10000000)
 //
 // LRXD/RRXD/SSTAT ($F1A148/4C/50)
 //
-uint8 DACReadByte(uint32 offset, uint32 who/*= UNKNOWN*/)
+uint8 DACReadByte(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
+	who = UNKNOWN;
 //	//WriteLog("DAC: %s reading byte from %08X\n", whoName[who], offset);
 	return 0xFF;
 }
 
-//static uint16 fakeWord = 0;
-uint16 DACReadWord(uint32 offset, uint32 who/*= UNKNOWN*/)
+//static uint16_t fakeWord = 0;
+uint16_t DACReadWord(uint32_t offset, uint32_t who/*= UNKNOWN*/)
 {
+	who = UNKNOWN;
 //	//WriteLog("DAC: %s reading word from %08X\n", whoName[who], offset);
 //	return 0xFFFF;
 //	//WriteLog("DAC: %s reading WORD %04X from %08X\n", whoName[who], fakeWord, offset);

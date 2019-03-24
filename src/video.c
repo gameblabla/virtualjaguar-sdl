@@ -26,7 +26,7 @@ int frame_ticker  = 0;
 //
 // Create SDL/OpenGL surfaces
 //
-bool InitVideo(void)
+uint8_t InitVideo(void)
 {
 #ifdef GCW0
 		mainSurfaceFlags = SDL_HWSURFACE | SDL_TRIPLEBUF;
@@ -137,7 +137,7 @@ void RenderBackbuffer(void)
 //
 // Resize the main SDL screen & backbuffer
 //
-void ResizeScreen(uint32 width, uint32 height)
+void ResizeScreen(uint32_t width, uint32_t height)
 {
 	SDL_FreeSurface(surface);
 	surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, 0x7C00, 0x03E0, 0x001F, 0);
@@ -161,7 +161,7 @@ void ResizeScreen(uint32 width, uint32 height)
 //
 // Return the screen's pitch
 //
-uint32 GetSDLScreenPitch(void)
+uint32_t GetSDLScreenPitch(void)
 {
 	return surface->pitch;
 }

@@ -31,19 +31,19 @@ void anajoy_done(void)
 {
 }
 
-void anajoy_byte_write(uint32 offset, uint8 data)
+void anajoy_byte_write(uint32_t offset, uint8 data)
 {
 	anajoy_ram[offset&0x01]=data;
 }
 
-void anajoy_word_write(uint32 offset, uint16 data)
+void anajoy_word_write(uint32_t offset, uint16_t data)
 {
 	offset&=0x01;
 	anajoy_ram[offset+0]=(data>>8)&0xff;
 	anajoy_ram[offset+1]=data&0xff;
 }
 
-uint8 anajoy_byte_read(uint32 offset)
+uint8 anajoy_byte_read(uint32_t offset)
 {
 	if (anajoy_ram[1]&0x01)
 		return(analog_y);
@@ -51,9 +51,9 @@ uint8 anajoy_byte_read(uint32 offset)
 		return(analog_x);
 }
 
-uint16 anajoy_word_read(uint32 offset)
+uint16_t anajoy_word_read(uint32_t offset)
 {
-	uint16 data=anajoy_byte_read((offset+0)&0x01);
+	uint16_t data=anajoy_byte_read((offset+0)&0x01);
 	data<<=8;
 	data|=anajoy_byte_read((offset+1)&0x01);
 	return(data);

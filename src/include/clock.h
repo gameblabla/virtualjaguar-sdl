@@ -6,9 +6,9 @@
 void clock_init(void);
 void clock_reset(void);
 void clock_done(void);
-void clock_byte_write(uint32, uint8);
-void clock_word_write(uint32, uint16);
+void clock_byte_write(uint32_t, uint8);
+void clock_word_write(uint32_t, uint16);
 uint8 clock_byte_read(uint32);
-uint16 clock_word_read(uint32);
+uint16_t clock_word_read(uint32);
 
 #endif

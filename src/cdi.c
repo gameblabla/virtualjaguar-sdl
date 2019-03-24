@@ -26,11 +26,11 @@ static uint8 cdi_track_start_mark[10] =
 	{ 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF };
 
 int cdi_fp;
-uint32 cdi_load_address;
-uint32 cdi_code_length;
+uint32_t cdi_load_address;
+uint32_t cdi_code_length;
 s_cdi_descriptor * cdi_descriptor;
 s_cdi_track ** cdi_tracks;
-uint32 cdi_tracks_count;
+uint32_t cdi_tracks_count;
 
 
 int cdi_open(char * path)
@@ -46,15 +46,15 @@ void cdi_close(int fp)
 }
 
 
-s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp)
+struct s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp)
 {
-	s_cdi_descriptor * descriptor;
-	uint32 previous_position = 0;
+	struct s_cdi_descriptor * descriptor;
+	uint32_t previous_position = 0;
 
 	if (fp == -1)
 		return 0;
 
-	descriptor = (s_cdi_descriptor *)malloc(sizeof(s_cdi_descriptor));
+	descriptor = (struct s_cdi_descriptor *)malloc(sizeof(struct s_cdi_descriptor));
 
 	if (descriptor == NULL)
 		return 0;
@@ -76,7 +76,7 @@ s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp)
 	lseek(fp, descriptor->header_offset, SEEK_SET);
 	read(fp, &descriptor->nb_of_sessions, 2);
 
-	descriptor->sessions=(s_cdi_session *)malloc(descriptor->nb_of_sessions * sizeof(s_cdi_session));
+	descriptor->sessions=(struct s_cdi_session *)malloc(descriptor->nb_of_sessions * sizeof(struct s_cdi_session));
 
 	if (descriptor->sessions == NULL)
 	{
@@ -87,23 +87,23 @@ s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp)
 	if (stdfp)
 		fprintf(stdfp, "CDI: %i sessions\n", descriptor->nb_of_sessions);
 
-	uint32 track_position = 0;
-	for(uint16 session=0; session<descriptor->nb_of_sessions; session++)
+	uint32_t track_position = 0;
+	for(uint16_t session=0; session<descriptor->nb_of_sessions; session++)
 	{
 		read(fp, &descriptor->sessions[session].nb_of_tracks, 2);
-		descriptor->sessions[session].tracks = (s_cdi_track *)malloc(descriptor->sessions[session].nb_of_tracks * sizeof(s_cdi_track));
+		descriptor->sessions[session].tracks = (struct s_cdi_track *)malloc(descriptor->sessions[session].nb_of_tracks * sizeof(struct s_cdi_track));
 
 		if (stdfp)
 			fprintf(stdfp, "CDI:\nCDI: Reading session %i (%i tracks)\n", session, descriptor->sessions[session].nb_of_tracks);
 
-		for (uint16 track=0; track<descriptor->sessions[session].nb_of_tracks; track++)
+		for (uint16_t track=0; track<descriptor->sessions[session].nb_of_tracks; track++)
 		{
 			static char current_start_mark[10];
 			s_cdi_track * current_track=&descriptor->sessions[session].tracks[track];
 			if (stdfp)
 				fprintf(stdfp, "CDI:\nCDI: \t\tReading track %i\n",track);
 
-			uint32 temp_value;
+			uint32_t temp_value;
 
 			read(fp, &temp_value, 4);
 
@@ -225,7 +225,7 @@ s_cdi_descriptor * cdi_get_descriptor(int fp, FILE * stdfp)
 	return descriptor;
 }
 
-void cdi_dump_descriptor(FILE * fp, s_cdi_descriptor * cdi_descriptor)
+void cdi_dump_descriptor(FILE * fp, struct s_cdi_descriptor * cdi_descriptor)
 {
 	fprintf(fp, "CDI: %i Mb\n", (int)(cdi_descriptor->length >> 20));
 	fprintf(fp, "CDI: Format version ");
@@ -246,17 +246,17 @@ void cdi_dump_descriptor(FILE * fp, s_cdi_descriptor * cdi_descriptor)
 	fprintf(fp, "CDI: %i sessions\n", cdi_descriptor->nb_of_sessions);
 }
 
-uint8 * cdi_extract_boot_code(int fp, s_cdi_descriptor * cdi_descriptor)
+uint8 * cdi_extract_boot_code(int fp, struct s_cdi_descriptor * cdi_descriptor)
 {
-	s_cdi_track * boot_track = &cdi_descriptor->sessions[1].tracks[0];
-	uint32 boot_track_size = boot_track->length * boot_track->sector_size;
+	struct s_cdi_track * boot_track = &cdi_descriptor->sessions[1].tracks[0];
+	uint32_t boot_track_size = boot_track->length * boot_track->sector_size;
 
 	uint8 * boot_track_data = (uint8 *)malloc(boot_track_size);
 	lseek(fp, 2 + (boot_track->position), SEEK_SET);
 	read(fp, boot_track_data, boot_track_size);
 	
-	uint32 * boot_track_data_32 = (uint32 *)boot_track_data;
-	uint32 offset = 0;
+	uint32_t * boot_track_data_32 = (uint32_t *)boot_track_data;
+	uint32_t offset = 0;
 	while (offset < (boot_track_size >> 2))
 	{
 		if (boot_track_data_32[offset] == 0x49205452)
@@ -272,7 +272,7 @@ uint8 * cdi_extract_boot_code(int fp, s_cdi_descriptor * cdi_descriptor)
 //This is likely wrong, but won't get a chance to fix it until I can get a CD image
 //to work with...
 	offset = (offset << 2) + 4;
-	uint16 * data16 = (uint16 *)&boot_track_data[offset];
+	uint16_t * data16 = (uint16_t *)&boot_track_data[offset];
 	cdi_load_address = *data16++;
 	cdi_load_address <<= 16;
 	cdi_load_address |= *data16++;
@@ -284,9 +284,9 @@ uint8 * cdi_extract_boot_code(int fp, s_cdi_descriptor * cdi_descriptor)
 //No need for byte swapping any more...
 /*	WriteLog("cdi: byte swapping boot code\n");
 
-	for(uint32 i=0; i<(cdi_code_length >> 1); i++)
+	for(uint32_t i=0; i<(cdi_code_length >> 1); i++)
 	{
-		uint16 sdata = data16[i];
+		uint16_t sdata = data16[i];
 		sdata = (sdata >> 8) | (sdata << 8);
 		data16[i] = sdata;
 	}*/
@@ -294,7 +294,7 @@ uint8 * cdi_extract_boot_code(int fp, s_cdi_descriptor * cdi_descriptor)
 	return (uint8 *)data16;
 }
 
-void cdi_load_sector(uint32 sector, uint8 * buffer)
+void cdi_load_sector(uint32_t sector, uint8 * buffer)
 {
 	if (sector == 0xFFFFFFFF)
 	{
@@ -309,7 +309,7 @@ void cdi_load_sector(uint32 sector, uint8 * buffer)
 
 //This is probably not needed any more...
 /*	// byte swap
-	for (uint32 i=0;i<2352;i+=2)
+	for (uint32_t i=0;i<2352;i+=2)
 	{
 		uint8 sdata=buffer[i+0];
 		buffer[i+0]=buffer[i+1];

@@ -15,12 +15,12 @@ extern "C" {
 
 void InitGUI(void);
 void GUIDone(void);
-//void DrawString(int16 * screen, uint32 x, uint32 y, bool invert, const char * text, ...);
-//bool GUIMain(void);
-bool GUIMain(char *);
+//void DrawString(int16 * screen, uint32_t x, uint32_t y, uint8_t invert, const char * text, ...);
+//uint8_t GUIMain(void);
+uint8_t GUIMain(char *);
 
-uint32 JaguarLoadROM(uint8 * rom, char * path);
-bool JaguarLoadFile(char * path);
+uint32_t JaguarLoadROM(uint8 * rom, char * path);
+uint8_t JaguarLoadFile(char * path);
 
 #ifdef __cplusplus
 }

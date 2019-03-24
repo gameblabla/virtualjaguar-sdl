@@ -16,27 +16,27 @@ typedef struct sMemBlockInfo
 {
 	void * ptr;
 	char * info;
-	UINT32 size;
-	sMemBlockInfo * next;
-	sMemBlockInfo * prev;
+	uint32_t size;
+	struct sMemBlockInfo * next;
+	struct sMemBlockInfo * prev;
 } sMemBlockInfo;
 
 // Private global variables
 
-static sMemBlockInfo memoryInfo;
-//static UINT32 memoryMaxAllocated;
-static UINT32 currentAllocatedMemory;
-static UINT32 maximumAllocatedMemory;
+static struct sMemBlockInfo memoryInfo;
+//static uint32_t memoryMaxAllocated;
+static uint32_t currentAllocatedMemory;
+static uint32_t maximumAllocatedMemory;
 
 
-void memory_addMemInfo(void * ptr, UINT32 size, char * info)
+void memory_addMemInfo(void * ptr, uint32_t size, char * info)
 {
-	sMemBlockInfo * alias = &memoryInfo;
+	struct sMemBlockInfo * alias = &memoryInfo;
 
 	while (alias->next)
 		alias = alias->next;
 
-	alias->next = (sMemBlockInfo *)malloc(sizeof(sMemBlockInfo));
+	alias->next = (struct sMemBlockInfo *)malloc(sizeof(struct sMemBlockInfo));
 
 	if (alias->next == NULL)
 	{
@@ -62,7 +62,7 @@ void MemoryDone(void)
 {
 }
 
-void * memory_malloc(UINT32 size, char * info)
+void * memory_malloc(uint32_t size, char * info)
 {
 	void * ptr = (void *)malloc(size);
 
@@ -78,7 +78,7 @@ void * memory_malloc(UINT32 size, char * info)
 	return ptr;
 }
 
-void memory_malloc_secure(void ** new_ptr, UINT32 size, char * info)
+void memory_malloc_secure(void ** new_ptr, uint32_t size, char * info)
 {
 	//WriteLog("Memory: Allocating %i bytes of memory for <%s>...", size, (info == NULL ? "unknown" : info));
 
@@ -103,7 +103,7 @@ void memory_free(void * ptr)
 {
 //	sMemBlockInfo * alias= &memoryInfo;
 //	alias = alias->next;
-	sMemBlockInfo * alias= memoryInfo.next;
+	struct sMemBlockInfo * alias= memoryInfo.next;
 
 	while (alias->ptr != ptr)
 		alias = alias->next;
@@ -122,7 +122,7 @@ void memory_free(void * ptr)
 
 void memory_memoryUsage(FILE * fp)
 {
-	/*UINT32 total = 0;
+	/*uint32_t total = 0;
 
 	fprintf(fp, "Memory usage:\n");
 

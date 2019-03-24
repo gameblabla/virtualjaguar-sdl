@@ -32,16 +32,16 @@ extern uint8 * jaguar_CDBootROM;
 // Global variables (export capable)
 //should these even be here anymore?
 
-bool finished = false;
-bool BIOSLoaded = false;
-bool CDBIOSLoaded = false;
+uint8_t finished = false;
+uint8_t BIOSLoaded = false;
+uint8_t CDBIOSLoaded = false;
 
 //
 // The main emulator loop (what else?)
 //
 
 //temp, so we can grab this from elsewhere.
-uint32 totalFrames;
+uint32_t totalFrames;
 
 int main(int argc, char * argv[])
 {
@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
 	printf("James L. Hammons (WIN32) and Adam Green (MacOS)\n");
 	printf("Contact: http://sdlemu.ngemu.com/ | sdlemu@ngemu.com\n");
 
-	bool haveCart = false;							// Assume there is no cartridge...!
+	uint8_t haveCart = false;							// Assume there is no cartridge...!
 	LoadVJSettings();								// Get config file settings...
 
 	// Check the switches... ;-)

@@ -11,11 +11,11 @@
 #define VIRTUAL_SCREEN_HEIGHT_NTSC	240
 #define VIRTUAL_SCREEN_HEIGHT_PAL	256
 
-bool InitVideo(void);
+uint8_t InitVideo(void);
 void VideoDone(void);
 void RenderBackbuffer(void);
-void ResizeScreen(uint32 width, uint32 height);
-uint32 GetSDLScreenPitch(void);
+void ResizeScreen(uint32_t width, uint32_t height);
+uint32_t GetSDLScreenPitch(void);
 void ToggleFullscreen(void);
 
 #endif	// __VIDEO_H__

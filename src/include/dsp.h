@@ -17,12 +17,12 @@ void DSPDone(void);
 void DSPUpdateRegisterBanks(void);
 void DSPHandleIRQs(void);
 void DSPSetIRQLine(int irqline, int state);
-uint8 DSPReadByte(uint32 offset, uint32 who = UNKNOWN);
-uint16 DSPReadWord(uint32 offset, uint32 who = UNKNOWN);
-uint32 DSPReadLong(uint32 offset, uint32 who = UNKNOWN);
-void DSPWriteByte(uint32 offset, uint8 data, uint32 who = UNKNOWN);
-void DSPWriteWord(uint32 offset, uint16 data, uint32 who = UNKNOWN);
-void DSPWriteLong(uint32 offset, uint32 data, uint32 who = UNKNOWN);
+uint8 DSPReadByte(uint32_t offset, uint32_t who);
+uint16_t DSPReadWord(uint32_t offset, uint32_t who);
+uint32_t DSPReadLong(uint32_t offset, uint32_t who);
+void DSPWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void DSPWriteWord(uint32_t offset, uint16_t data, uint32_t who);
+void DSPWriteLong(uint32_t offset, uint32_t data, uint32_t who);
 void dsp_releaseTimeslice(void);
 
 void DSPExecP(int32 cycles);

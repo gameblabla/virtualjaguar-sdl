@@ -46,7 +46,7 @@ static UINT16 read_word (char *buf) {
 }
 
 /* Use these to avoid structure padding and byte-ordering problems */
-static UINT32 read_dword (char *buf) {
+static uint32_t read_dword (char *buf) {
    unsigned char *ubuf = (unsigned char *) buf;
 
    return ((UINT32)ubuf[3] << 24) | ((UINT32)ubuf[2] << 16) | ((UINT32)ubuf[1] << 8) | (UINT32)ubuf[0];
@@ -827,7 +827,7 @@ static int equal_filename(const char * zipfile, const char * file)
 // buf will be set to point to the uncompressed image of that zipped file.
 // length will be set to the length of the uncompressed data.
 //
-int load_zipped_file(int pathtype, int pathindex, const char * zipfile, const char * filename, unsigned char ** buf, uint32 * length)
+int load_zipped_file(int pathtype, int pathindex, const char * zipfile, const char * filename, unsigned char ** buf, uint32_t * length)
 {
 	ZIP * zip;
 	struct zipent * ent;

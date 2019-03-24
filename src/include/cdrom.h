@@ -11,15 +11,15 @@ void CDROMInit(void);
 void CDROMReset(void);
 void CDROMDone(void);
 
-void BUTCHExec(uint32 cycles);
+void BUTCHExec(uint32_t cycles);
 
-uint8 CDROMReadByte(uint32 offset, uint32 who = UNKNOWN);
-uint16 CDROMReadWord(uint32 offset, uint32 who = UNKNOWN);
-void CDROMWriteByte(uint32 offset, uint8 data, uint32 who = UNKNOWN);
-void CDROMWriteWord(uint32 offset, uint16 data, uint32 who = UNKNOWN);
+uint8 CDROMReadByte(uint32_t offset, uint32_t who);
+uint16_t CDROMReadWord(uint32_t offset, uint32_t who);
+void CDROMWriteByte(uint32_t offset, uint8 data, uint32_t who);
+void CDROMWriteWord(uint32_t offset, uint16_t data, uint32_t who);
 
-bool ButchIsReadyToSend(void);
-uint16 GetWordFromButchSSI(uint32 offset, uint32 who = UNKNOWN);
+uint8_t ButchIsReadyToSend(void);
+uint16_t GetWordFromButchSSI(uint32_t offset, uint32_t who);
 void SetSSIWordsXmittedFromButch(void);
 
 #endif	// __CDROM_H__

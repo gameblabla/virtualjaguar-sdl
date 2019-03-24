@@ -121,7 +121,7 @@ int readuncompresszip(ZIP * zip, struct zipent * ent, char * data);
 
 /* public functions */
 int /* error */ load_zipped_file(int pathtype, int pathindex, const char * zipfile, const char * filename,
-	unsigned char ** buf, uint32 * length);
+	unsigned char ** buf, uint32_t * length);
 
 void unzip_cache_clear(void);
 

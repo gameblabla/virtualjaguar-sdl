@@ -21,12 +21,12 @@ void GPUUpdateRegisterBanks(void);
 void GPUHandleIRQs(void);
 void GPUSetIRQLine(int irqline, int state);
 
-uint8_t GPUReadByte(uint32_t offset, uint32_t who = UNKNOWN);
-uint16_t GPUReadWord(uint32_t offset, uint32_t who = UNKNOWN);
-uint32_t GPUReadLong(uint32_t offset, uint32_t who = UNKNOWN);
-void GPUWriteByte(uint32_t offset, uint8_t data, uint32_t who = UNKNOWN);
-void GPUWriteWord(uint32_t offset, uint16_t data, uint32_t who = UNKNOWN);
-void GPUWriteLong(uint32_t offset, uint32_t data, uint32_t who = UNKNOWN);
+uint8_t GPUReadByte(uint32_t offset, uint32_t who);
+uint16_t GPUReadWord(uint32_t offset, uint32_t who);
+uint32_t GPUReadLong(uint32_t offset, uint32_t who);
+void GPUWriteByte(uint32_t offset, uint8_t data, uint32_t who);
+void GPUWriteWord(uint32_t offset, uint16_t data, uint32_t who);
+void GPUWriteLong(uint32_t offset, uint32_t data, uint32_t who);
 
 uint32_t GPUGetPC(void);
 void GPUReleaseTimeslice(void);

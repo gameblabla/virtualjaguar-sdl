@@ -6,6 +6,8 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <stdint.h>
+
 // This is only good on certain intel 32-bit platforms...
 // You may need to tweak to suit your specific platform.
 
@@ -26,6 +28,9 @@ typedef uint32	UINT32;
 typedef int32	INT32;
 typedef uint64	UINT64;
 typedef int64	INT64;
+
+#define false 0
+#define true 1
 
 // Read/write tracing enumeration
 

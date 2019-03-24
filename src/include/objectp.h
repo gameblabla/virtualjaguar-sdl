@@ -11,15 +11,15 @@ void op_init(void);
 void op_reset(void);
 void op_done(void);
 
-void OPProcessList(int scanline, bool render);
-uint32 op_get_list_pointer(void);
-void op_set_status_register(uint32 data);
-uint32 op_get_status_register(void);
-void op_set_current_object(uint64 object);
+void OPProcessList(int scanline, uint8_t render);
+uint32_t op_get_list_pointer(void);
+void op_set_status_register(uint32_t data);
+uint32_t op_get_status_register(void);
+void op_set_current_object(uint64_t object);
 
-uint8 OPReadByte(uint32, uint32 who = UNKNOWN);
-uint16 OPReadWord(uint32, uint32 who = UNKNOWN);
-void OPWriteByte(uint32, uint8, uint32 who = UNKNOWN);
-void OPWriteWord(uint32, uint16, uint32 who = UNKNOWN);
+uint8 OPReadByte(uint32_t, uint32_t who);
+uint16_t OPReadWord(uint32_t, uint32_t who);
+void OPWriteByte(uint32_t, uint8_t, uint32_t who);
+void OPWriteWord(uint32_t, uint16_t, uint32_t who);
 
 #endif	// __OBJECTP_H__

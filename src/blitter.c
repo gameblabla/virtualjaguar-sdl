@@ -20,8 +20,8 @@ extern int jaguar_active_memory_dumps;
 // Local global variables
 
 uint8_t blitter_working = 0;
-bool startConciseBlitLogging = false;
-bool logBlit = false;
+uint8_t startConciseBlitLogging = false;
+uint8_t logBlit = false;
 
 // Blitter register RAM (most of it is hidden from the user)
 
@@ -29,7 +29,7 @@ static uint8_t blitter_ram[0x100];
 
 // Other crapola
 
-bool specialLog = false;
+uint8_t specialLog = false;
 extern int effect_start;
 void BlitterMidsummer(uint32_t cmd);
 void BlitterMidsummer2(void);
@@ -235,7 +235,7 @@ void BlitterMidsummer2(void);
 //#define WRITE_PIXEL_8(a,d)       { JaguarWriteByte(a##_addr+PIXEL_OFFSET_8(a), d); }
 
 // 16 bpp pixel write
-#define WRITE_PIXEL_16(a,d)     {  JaguarWriteWord(a##_addr+(PIXEL_OFFSET_16(a)<<1),d); }
+#define WRITE_PIXEL_16(a,d)     {  JaguarWriteWord(a##_addr+(PIXEL_OFFSET_16(a)<<1),d, UNKNOWN); }
 //#define WRITE_PIXEL_16(a,d)     {  JaguarWriteWord(a##_addr+(PIXEL_OFFSET_16(a)<<1), d, BLITTER); if (specialLog) WriteLog("Pixel write address: %08X\n", a##_addr+(PIXEL_OFFSET_16(a)<<1)); }
 //#define WRITE_PIXEL_16(a,d)     {  JaguarWriteWord(a##_addr+(PIXEL_OFFSET_16(a)<<1), d); if (specialLog) WriteLog("Pixel write address: %08X\n", a##_addr+(PIXEL_OFFSET_16(a)<<1)); }
 
@@ -1481,8 +1481,9 @@ void blitter_done(void)
 {
 }
 
-uint8 BlitterReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint8 BlitterReadByte(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	offset &= 0xFF;
 
 	// status register
@@ -1501,19 +1502,22 @@ uint8 BlitterReadByte(uint32 offset, uint32 who/*=UNKNOWN*/)
 }
 
 //Crappy!
-uint16 BlitterReadWord(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint16_t BlitterReadWord(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	return ((uint16)BlitterReadByte(offset, who) << 8) | (uint16)BlitterReadByte(offset+1, who);
 }
 
 //Crappy!
-uint32 BlitterReadLong(uint32 offset, uint32 who/*=UNKNOWN*/)
+uint32_t BlitterReadLong(uint32_t offset, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 	return (BlitterReadWord(offset, who) << 16) | BlitterReadWord(offset+2, who);
 }
 
-void BlitterWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
+void BlitterWriteByte(uint32_t offset, uint8 data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 /*if (offset & 0xFF == 0x7B)
 	WriteLog("--> Wrote to B_STOP: value -> %02X\n", data);*/
 	offset &= 0xFF;
@@ -1572,19 +1576,20 @@ void BlitterWriteByte(uint32 offset, uint8 data, uint32 who/*=UNKNOWN*/)
 	blitter_ram[offset] = data;
 }
 
-void BlitterWriteWord(uint32 offset, uint16 data, uint32 who/*=UNKNOWN*/)
+void BlitterWriteWord(uint32_t offset, uint16_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 //#if 1
 /*	if (offset & 0xFF == A1_PIXEL && data == 14368)
 	{
 		WriteLog("\n1\nA1_PIXEL written by %s (%u)...\n\n\n", whoName[who], data);
-extern bool doGPUDis;
+extern uint8_t doGPUDis;
 doGPUDis = true;
 	}
 	if ((offset & 0xFF) == (A1_PIXEL + 2) && data == 14368)
 	{
 		WriteLog("\n2\nA1_PIXEL written by %s (%u)...\n\n\n", whoName[who], data);
-extern bool doGPUDis;
+extern uint8_t doGPUDis;
 doGPUDis = true;
 	}//*/
 //#endif
@@ -1597,7 +1602,7 @@ doGPUDis = true;
 	// But then again, according to the Jaguar docs, this is correct...!
 {
 /*extern int blit_start_log;
-extern bool doGPUDis;
+extern uint8_t doGPUDis;
 if (blit_start_log)
 {
 	WriteLog("BLIT: Blitter started by %s...\n", whoName[who]);
@@ -1608,13 +1613,14 @@ if (blit_start_log)
 }
 //F02278,9,A,B
 
-void BlitterWriteLong(uint32 offset, uint32 data, uint32 who/*=UNKNOWN*/)
+void BlitterWriteLong(uint32_t offset, uint32_t data, uint32_t who/*=UNKNOWN*/)
 {
+	who = UNKNOWN;
 //#if 1
 /*	if ((offset & 0xFF) == A1_PIXEL && (data & 0xFFFF) == 14368)
 	{
 		WriteLog("\n3\nA1_PIXEL written by %s (%u)...\n\n\n", whoName[who], data);
-extern bool doGPUDis;
+extern uint8_t doGPUDis;
 doGPUDis = true;
 	}//*/
 //#endif
