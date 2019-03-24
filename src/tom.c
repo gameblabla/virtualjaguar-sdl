@@ -1320,13 +1320,8 @@ int tom_irq_enabled(int irq)
 
 void TOMResetPIT(void)
 {
-//Probably should *add* this amount to the counter to retain cycle accuracy! !!! FIX !!! [DONE]
-//Also, why +1??? 'Cause that's what it says in the JTRM...!
-//There is a small problem with this approach: If both the prescaler and the divider are equal
-//to $FFFF then the counter won't be large enough to handle it. !!! FIX !!!
 	if (tom_timer_prescaler)
 		tom_timer_counter += (1 + tom_timer_prescaler) * (1 + tom_timer_divider);
-//	WriteLog("tom: reseting timer to 0x%.8x (%i)\n",tom_timer_counter,tom_timer_counter);
 }
 
 //

@@ -22,7 +22,6 @@
 #include "cdbios.h"
 
 // Exports from JAGUAR.CPP
-
 extern int32_t jaguar_cpu_in_exec;
 extern uint32_t jaguar_mainRom_crc32, jaguarRomSize, jaguarRunAddress;
 extern char * jaguar_eeproms_path;

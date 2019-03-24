@@ -1436,27 +1436,12 @@ Blit! (00110000 <- 0010B2A8) count: 12 x 12, A1/2_FLAGS: 000042E2/00000020 [cmd:
         A1 x/y: 173/144, A2 x/y: 4052/0
 
 */
-//extern int op_start_log;
 
 	blitter_working = 1;
 //#ifndef USE_GENERIC_BLITTER
 //	if (!blitter_execute_cached_code(blitter_in_cache(cmd)))
 //#endif
 	blitter_generic(cmd);
-
-/*if (blit_start_log)
-{
-	if (a1_addr == 0xF03000 && a2_addr == 0x004D58)
-	{
-		WriteLog("\nBytes at 004D58:\n");
-		for(int i=0x004D58; i<0x004D58+(10*127*4); i++)
-			WriteLog("%02X ", JaguarReadByte(i));
-		WriteLog("\nBytes at F03000:\n");
-		for(int i=0xF03000; i<0xF03000+(6*127*4); i++)
-			WriteLog("%02X ", JaguarReadByte(i));
-		WriteLog("\n\n");
-	}
-}//*/
 
 	blitter_working = 0;
 }

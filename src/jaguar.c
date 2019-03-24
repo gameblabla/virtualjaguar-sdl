@@ -39,7 +39,6 @@ extern uint8_t startMemLog;							// Set by "e" key
 extern int effect_start;
 extern int effect_start2, effect_start3, effect_start4, effect_start5, effect_start6;
 #endif
-
 // Memory debugging identifiers
 
 char * whoName[9] =
@@ -562,7 +561,9 @@ void jaguar_init(void)
 	memset(jaguar_mainRom, 0x01, 0x600000);	// & set it to all 01s...
 //	memset(jaguar_mainRom, 0xFF, 0x600000);	// & set it to all Fs...
 
+	m68k_init();
 	m68k_set_cpu_type(M68K_CPU_TYPE_68000);
+	
 	GPUInit();
 	#ifdef DSP_EMU
 	DSPInit();
