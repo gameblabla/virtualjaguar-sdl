@@ -1,0 +1,3 @@
+- Gameblabla (GCW0 port, Switched to C, Stripping down code, backporting code from upstream, ported to Musashi 3.4 etc...)
+- Shamus (Original author of VJ)
+- Niels Wagenaar & Caz (Port to SDL,  http://sdlemu.ngemu.com)

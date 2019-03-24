@@ -10,12 +10,12 @@ CC         = gcc
 LD         = gcc
 TARGET     = vj$(EXESUFFIX)
 
-CFLAGS = -Wall -O0 -g `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU
-LDFLAGS =
+CFLAGS = -Wall -Ofast -march=native -fno-common -flto -Wall -Wextra `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU
+LDFLAGS = -flto
 
 LIBS = `sdl-config --libs` -lz $(GLLIB)
 
-INCS = -I. -Isrc -Isrc/include
+INCS = -I. -Isrc -Isrc/include -Isrc/musashi
 
 THECC = $(CC) $(CFLAGS) $(INCS)
 
@@ -60,13 +60,6 @@ obj/%.o: src/%.c
 
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
-#	strip --strip-all vj$(EXESUFFIX)
-#	upx -9 vj$(EXESUFFIX)
-
-# Other stuff that has unusual dependencies
-
-obj/gui.o: src/gui.c src/include/gui.h
-obj/cdintf.o: src/cdintf.c src/cdintf_linux.c src/include/cdintf.h
 
 #
 # Musashi specific stuffola
@@ -76,19 +69,19 @@ obj/m68kcpu.o: obj/m68kops.h src/m68k.h src/m68kconf.h
 	$(CC) $(CFLAGS) -Iobj -c src/m68kcpu.c -o obj/m68kcpu.o
 
 obj/m68kops.o: obj/m68kmake$(EXESUFFIX) obj/m68kops.h obj/m68kops.c src/m68k.h src/m68kconf.h
-	$(CC) $(CFLAGS) -Isrc -c obj/m68kops.c -o obj/m68kops.o
+	$(CC) $(CFLAGS) $(INCS) -c obj/m68kops.c -o obj/m68kops.o
 
 obj/m68kopac.o: obj/m68kmake$(EXESUFFIX) obj/m68kops.h obj/m68kopac.c src/m68k.h src/m68kconf.h
-	$(CC) $(CFLAGS) -Isrc -c obj/m68kopac.c -o obj/m68kopac.o
+	$(CC) $(CFLAGS) $(INCS) -c obj/m68kopac.c -o obj/m68kopac.o
 
 obj/m68kopdm.o: obj/m68kmake$(EXESUFFIX) obj/m68kops.h obj/m68kopdm.c src/m68k.h src/m68kconf.h
-	$(CC) $(CFLAGS) -Isrc -c obj/m68kopdm.c -o obj/m68kopdm.o
+	$(CC) $(CFLAGS) $(INCS) -c obj/m68kopdm.c -o obj/m68kopdm.o
 
 obj/m68kopnz.o: obj/m68kmake$(EXESUFFIX) obj/m68kops.h obj/m68kopnz.c src/m68k.h src/m68kconf.h
-	$(CC) $(CFLAGS) -Isrc -c obj/m68kopnz.c -o obj/m68kopnz.o
+	$(CC) $(CFLAGS) $(INCS) -c obj/m68kopnz.c -o obj/m68kopnz.o
 
 obj/m68kdasm.o: src/m68kdasm.c src/m68k.h src/m68kconf.h
-	$(CC) $(CFLAGS) -Isrc -c src/m68kdasm.c -o obj/m68kdasm.o
+	$(CC) $(CFLAGS) $(INCS) -c src/m68kdasm.c -o obj/m68kdasm.o
 
 obj/m68kops.h: obj/m68kmake$(EXESUFFIX)
 	obj/m68kmake obj src/m68k_in.c

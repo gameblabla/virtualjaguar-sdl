@@ -9,11 +9,17 @@
 TOOLCHAIN = /opt/gcw0-toolchain
 CC = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
 LD = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
-TARGET     = vj_nodsp$(EXESUFFIX)
+TARGET = vj$(EXESUFFIX)
+
+DSP_EMULATION = 1
 
 # Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
-CFLAGS = -Ofast -mips32r2 -fdata-sections -ffunction-sections -fno-PIE -D__GCCUNIX__ -DGCW0 -DGCW
+CFLAGS = -Ofast -mips32r2 -fdata-sections -ffunction-sections -fno-PIE -flto
+CFLAGS += -D__GCCUNIX__ -DGCW0 -DGCW -DDSP_EMU
 LDFLAGS = -Wl,--as-needed -Wl,--gc-sections -flto -s
+ifeq ($(DSP_EMULATION), 1)
+CFLAGS 		+= -DDSP_EMU
+endif
 
 LIBS = -lSDL -lz $(GLLIB)
 
@@ -27,6 +33,7 @@ OBJS = \
 	obj/clock.o \
 	obj/crc32.o \
 	obj/dac.o \
+	obj/dsp.o \
 	obj/eeprom.o \
 	obj/gpu.o \
 	obj/gui.o \
@@ -61,11 +68,6 @@ obj/%.o: src/%.c
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 	
-# Other stuff that has unusual dependencies
-
-obj/gui.o: src/gui.c src/include/gui.h
-obj/cdintf.o: src/cdintf.c src/cdintf_linux.c src/include/cdintf.h
-
 #
 # Musashi specific stuffola
 #

@@ -6,14 +6,21 @@
 # easier for the maintainers. :-)
 #
 
-TOOLCHAIN = /opt/gcw0-toolchain
+TOOLCHAIN = /opt/rs97-toolchain
 CC = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
 LD = $(TOOLCHAIN)/usr/bin/mipsel-linux-gcc
-TARGET     = vj$(EXESUFFIX)
+TARGET = vj$(EXESUFFIX)
+
+DSP_EMULATION = 1
 
 # Note that we use optimization level 2 instead of 3--3 doesn't seem to gain much over 2
-CFLAGS = -Ofast -mips32r2 -fdata-sections -ffunction-sections -fno-PIE -D__GCCUNIX__ -DGCW0 -DGCW -DDSP_EMU
-LDFLAGS = -Wl,--as-needed -Wl,--gc-sections -flto -s
+CFLAGS 	= -Ofast -fdata-sections -ffunction-sections -mno-fp-exceptions -mno-check-zero-division -mframe-header-opt -fsingle-precision-constant -fno-common -mips32 -fno-PIC -mno-abicalls -flto -fwhole-program -fno-PIE -mno-abicalls
+CFLAGS	+= -D__GCCUNIX__ -DGCW0 -DGCW
+ifeq ($(DSP_EMULATION), 1)
+CFLAGS 		+= -DDSP_EMU
+endif
+
+LDFLAGS = -lc -lgcc -lSDL -no-pie -Wl,--as-needed -Wl,--gc-sections -flto -fwhole-program -s
 
 LIBS = -lSDL -lz $(GLLIB)
 
@@ -62,11 +69,6 @@ obj/%.o: src/%.c
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 	
-# Other stuff that has unusual dependencies
-
-obj/gui.o: src/gui.c src/include/gui.h
-obj/cdintf.o: src/cdintf.c src/cdintf_linux.c src/include/cdintf.h
-
 #
 # Musashi specific stuffola
 #
