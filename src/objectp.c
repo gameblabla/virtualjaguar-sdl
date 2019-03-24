@@ -1021,10 +1021,10 @@ void OPProcessScaledBitmap(uint64_t p0, uint64_t p1, uint64_t p2, uint8_t render
 	// for use when using endian-corrected data (i.e., any of the *ReadWord functions!)
 	uint16_t * paletteRAM16 = (uint16_t *)paletteRAM;
 
-	uint8 hscale = p2 & 0xFF;
+	uint16_t hscale = p2 & 0xFF;
 // Hmm. It seems that fixing the horizontal scale necessitated re-fixing this. Not sure why,
 // but seems to be consistent with the vertical scaling now (and it may turn out to be wrong!)...
-	uint8 horizontalRemainder = hscale;				// Not sure if it starts full, but seems reasonable [It's not!]
+	uint16_t horizontalRemainder = hscale;				// Not sure if it starts full, but seems reasonable [It's not!]
 //	uint8 horizontalRemainder = 0;					// Let's try zero! Seems to work! Yay! [No, it doesn't!]
 	int32 scaledWidthInPixels = (iwidth * phraseWidthToPixels[depth] * hscale) >> 5;
 	uint32_t scaledPhrasePixels = (phraseWidthToPixels[depth] * hscale) >> 5;
@@ -1223,7 +1223,7 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				pixCount++;
 				pixels <<= 1;
 			}//*/
-			while (horizontalRemainder <= 0x20)		// I.e., it's <= 0 (*before* subtraction)
+			while (horizontalRemainder < 0x20)		// I.e., it's <= 0 (*before* subtraction)
 			{
 				horizontalRemainder += hscale;
 				pixCount++;
@@ -1280,7 +1280,7 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				pixCount++;
 				pixels <<= 2;
 			}//*/
-			while (horizontalRemainder <= 0x20)		// I.e., it's <= 0 (*before* subtraction)
+			while (horizontalRemainder < 0x20)		// I.e., it's <= 0 (*before* subtraction)
 			{
 				horizontalRemainder += hscale;
 				pixCount++;
@@ -1337,7 +1337,7 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 				pixCount++;
 				pixels <<= 4;
 			}//*/
-			while (horizontalRemainder <= 0x20)		// I.e., it's <= 0 (*before* subtraction)
+			while (horizontalRemainder < 0x20)		// I.e., it's <= 0 (*before* subtraction)
 			{
 				horizontalRemainder += hscale;
 				pixCount++;
@@ -1390,7 +1390,7 @@ uint32_t scaledPhrasePixelsUS = phraseWidthToPixels[depth] * hscale;
 
 			currentLineBuffer += lbufDelta;
 
-			while (horizontalRemainder <= 0x20)		// I.e., it's <= 0 (*before* subtraction)
+			while (horizontalRemainder < 0x20)		// I.e., it's <= 0 (*before* subtraction)
 			{
 				horizontalRemainder += hscale;
 				pixCount++;
