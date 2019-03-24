@@ -4,7 +4,7 @@ Virtual Jaguar SDL
 Stripped down port of Virtual Jaguar 1.07 SDL with some backported code from upstream. (gpu.c was fully updated from upstream, other code is only a mix)
 This is mostly intended for OpenDingux platforms like the GCW0 & RS-97 but can also be easily adapted to other platforms like the Pandora, Bittboy etc...
 
-The Musashi core has been updated to version 3.4, making it free software unlike the older version which forbade non-commercial usage.
+The Musashi core has been updated to version 3.4, making it free software unlike the older version which forbade commercial usage.
 (Newer Virtual Jaguar versions are using WinUAE M68K core instead on compatible setting, so it's actually much slower.)
 
 Compatibility
