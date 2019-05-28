@@ -6,7 +6,7 @@
 // Extensive cleanups/rewrites by James L. Hammons
 //
 
-#include <SDL.h>	// Used only for SDL_GetTicks...
+#include <SDL/SDL.h>	// Used only for SDL_GetTicks...
 #include "dsp.h"
 #define NEW_SCOREBOARD
 

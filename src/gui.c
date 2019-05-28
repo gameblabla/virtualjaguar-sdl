@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <sys/types.h>								// For MacOS <dirent.h> dependency
 #include <dirent.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <string.h>
 #include <ctype.h>									// For toupper()
 #include "settings.h"

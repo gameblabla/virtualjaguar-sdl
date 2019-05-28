@@ -6,7 +6,7 @@
 // Rewritten by James L. Hammons
 //
 
-#include "SDL.h"
+#include <SDL/SDL.h>
 #include "m68k.h"
 #include "jaguar.h"
 #include "settings.h"

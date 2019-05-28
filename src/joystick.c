@@ -7,7 +7,7 @@
 //
 
 #include <time.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include "jaguar.h"
 #include "video.h"
 #include "settings.h"

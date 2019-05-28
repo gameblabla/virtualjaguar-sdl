@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "SDL.h"
+#include <SDL/SDL.h>
 #include "sdlemu_config.h"
 #include "settings.h"
 

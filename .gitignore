@@ -12,6 +12,10 @@
 *.PBP
 *.SFO
 *.prx
+*.gcda
+*.elf
+*.j64
+*.bin
 memdump.bin
 /oswan/main/*.sh
 /oswan/main/*.txt

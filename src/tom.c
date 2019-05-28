@@ -244,7 +244,7 @@
 //	F02298            W   xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx   B_Z0 - Z0
 //	------------------------------------------------------------
 
-//#include <SDL.h>
+//#include <SDL/SDL.h>
 #include "tom.h"
 #include "video.h"
 #include "gpu.h"

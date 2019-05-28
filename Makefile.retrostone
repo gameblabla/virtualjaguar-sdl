@@ -6,18 +6,18 @@
 # easier for the maintainers. :-)
 #
 
-CC         = gcc
-LD         = gcc
-TARGET     = vj$(EXESUFFIX)
+CC			= /opt/retrostone-toolchain/bin/arm-buildroot-linux-musleabihf-gcc
+TARGET     = vj.elf
 
-CFLAGS = -Wall -Ofast -march=native -fno-common -flto -Wall -Wextra `sdl-config --cflags` -D__GCCUNIX__ -DDSP_EMU -DSCALE_TO_SCREEN
-LDFLAGS = -flto
+CFLAGS		= -D__GCCUNIX__ -DDSP_EMU -DSCALE_TO_SCREEN
+CFLAGS		+= -Ofast -march=armv7-a+neon-vfpv4 -mtune=cortex-a7 -mfpu=neon-vfpv4 -fdata-sections -ffunction-sections -funroll-loops -fsingle-precision-constant -fno-common -fno-PIC -flto
+CFLAGS		+= -falign-functions=1 -falign-jumps=1 -falign-loops=1 -falign-labels=1
+CFLAGS		+= -fprofile-use
 
-LIBS = `sdl-config --libs` -lz $(GLLIB)
+LDFLAGS = -lc -lgcc -flto -no-pie  -Wl,--as-needed -Wl,--gc-sections -s -lSDL -lasound -lz $(GLLIB)
 
 INCS = -I. -Isrc -Isrc/include -Isrc/musashi
 
-THECC = $(CC) $(CFLAGS) $(INCS)
 
 OBJS = \
 	obj/anajoy.o \
@@ -52,14 +52,14 @@ obj:
 	mkdir obj
 
 obj/%.o: src/%.c src/include/%.h
-	$(THECC) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 obj/%.o: src/%.c
-	$(THECC) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 
 $(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 #
 # Musashi specific stuffola
@@ -87,4 +87,4 @@ obj/m68kops.h: obj/m68kmake$(EXESUFFIX)
 	obj/m68kmake obj src/m68k_in.c
 
 obj/m68kmake$(EXESUFFIX): src/m68kmake.c src/m68k_in.c
-	$(CC) $(WARNINGS) src/m68kmake.c -o obj/m68kmake$(EXESUFFIX)
+	gcc $(WARNINGS) src/m68kmake.c -o obj/m68kmake$(EXESUFFIX)
